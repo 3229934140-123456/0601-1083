@@ -1,0 +1,74 @@
+{
+  "created_at": "2026-06-10T20:12:28.427189",
+  "updated_at": "2026-06-10T20:12:39.778087",
+  "todos": {
+    "[抖音]_demo_video.mp4_未选择封面": {
+      "id": "[抖音]_demo_video.mp4_未选择封面",
+      "item": "[抖音] demo_video.mp4 未选择封面",
+      "priority": "high",
+      "category": "cover",
+      "platform": "douyin",
+      "video": "demo_video.mp4",
+      "status": "done",
+      "created_at": "2026-06-10T20:12:28.427189",
+      "updated_at": "2026-06-10T20:12:39.778087",
+      "completed_at": "2026-06-10T20:12:39.778087"
+    },
+    "[抖音]_demo_video.mp4_时长_(未知)_不在推荐范围": {
+      "id": "[抖音]_demo_video.mp4_时长_(未知)_不在推荐范围",
+      "item": "[抖音] demo_video.mp4 时长 (未知) 不在推荐范围",
+      "priority": "medium",
+      "category": "duration",
+      "platform": "douyin",
+      "video": "demo_video.mp4",
+      "status": "pending",
+      "created_at": "2026-06-10T20:12:28.427189",
+      "updated_at": "2026-06-10T20:12:28.427189"
+    },
+    "[抖音]_demo_video.mp4_比例_(未知)_不是最佳比例": {
+      "id": "[抖音]_demo_video.mp4_比例_(未知)_不是最佳比例",
+      "item": "[抖音] demo_video.mp4 比例 (未知) 不是最佳比例",
+      "priority": "low",
+      "category": "ratio",
+      "platform": "douyin",
+      "video": "demo_video.mp4",
+      "status": "pending",
+      "created_at": "2026-06-10T20:12:28.427189",
+      "updated_at": "2026-06-10T20:12:28.427189"
+    },
+    "[小红书]_demo_video.mp4_未选择封面": {
+      "id": "[小红书]_demo_video.mp4_未选择封面",
+      "item": "[小红书] demo_video.mp4 未选择封面",
+      "priority": "high",
+      "category": "cover",
+      "platform": "xiaohongshu",
+      "video": "demo_video.mp4",
+      "status": "done",
+      "created_at": "2026-06-10T20:12:28.427189",
+      "updated_at": "2026-06-10T20:12:39.778087",
+      "completed_at": "2026-06-10T20:12:39.778087"
+    },
+    "[小红书]_demo_video.mp4_时长_(未知)_不在推荐范围": {
+      "id": "[小红书]_demo_video.mp4_时长_(未知)_不在推荐范围",
+      "item": "[小红书] demo_video.mp4 时长 (未知) 不在推荐范围",
+      "priority": "medium",
+      "category": "duration",
+      "platform": "xiaohongshu",
+      "video": "demo_video.mp4",
+      "status": "pending",
+      "created_at": "2026-06-10T20:12:28.427189",
+      "updated_at": "2026-06-10T20:12:28.427189"
+    },
+    "[小红书]_demo_video.mp4_比例_(未知)_不是最佳比例": {
+      "id": "[小红书]_demo_video.mp4_比例_(未知)_不是最佳比例",
+      "item": "[小红书] demo_video.mp4 比例 (未知) 不是最佳比例",
+      "priority": "low",
+      "category": "ratio",
+      "platform": "xiaohongshu",
+      "video": "demo_video.mp4",
+      "status": "pending",
+      "created_at": "2026-06-10T20:12:28.427189",
+      "updated_at": "2026-06-10T20:12:28.427189"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "pack_name": "test_new",
+  "created_at": "2026-06-10T20:39:42.080906",
+  "contents": {
+    "pack_name": "test_new",
+    "created_at": "2026-06-10T20:39:42.057460",
+    "videos": [
+      "demo_video.mp4"
+    ],
+    "covers": [],
+    "captions": [
+      "demo_video.srt",
+      "demo_video.vtt"
+    ],
+    "images": [
+      "landscape_photo.jpg",
+      "portrait_photo.png"
+    ]
+  },
+  "platforms": [
+    "douyin"
+  ]
+}

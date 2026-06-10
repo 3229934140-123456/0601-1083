@@ -1,0 +1,79 @@
+{
+  "platform_key": "douyin",
+  "platform_name": "抖音",
+  "generated_at": "2026-06-10T20:39:42.091081",
+  "platform_requirements": {
+    "ideal_duration": "15-60秒",
+    "ideal_ratio": "9:16",
+    "max_duration": "300秒",
+    "max_file_size": "512MB"
+  },
+  "videos": [
+    {
+      "video_name": "demo_video.mp4",
+      "video_path": "videos/demo_video.mp4",
+      "title": "海边日落Vlog",
+      "copy": "今天带大家来看美丽的海边日落，超级治愈！",
+      "hashtags": [
+        "测试标签1",
+        "测试标签2",
+        "海边",
+        "日落",
+        "Vlog",
+        "旅行",
+        "夏日"
+      ],
+      "hashtag_str": "#测试标签1 #测试标签2 #海边 #日落 #Vlog #旅行 #夏日",
+      "cover_path": "",
+      "caption_files": [
+        "captions/demo_video.srt",
+        "captions/demo_video.vtt"
+      ],
+      "duration": "未知",
+      "aspect_ratio": "未知",
+      "todos": [
+        {
+          "item": "未选择封面",
+          "priority": "high",
+          "action": "cover select",
+          "done": true
+        },
+        {
+          "item": "时长不在推荐范围",
+          "priority": "medium",
+          "action": "调整至 15-60秒",
+          "done": false
+        },
+        {
+          "item": "比例非最佳",
+          "priority": "low",
+          "action": "建议调整为 9:16",
+          "done": false
+        }
+      ],
+      "review_status": "approved",
+      "review_label": "已通过",
+      "review_icon": "✅",
+      "reviewer": "张主编",
+      "review_comment": "内容质量不错，可以发布",
+      "todo_done_count": 1,
+      "todo_total": 3,
+      "todo_progress": 33.33333333333333,
+      "ready": false
+    }
+  ],
+  "summary": {
+    "total_videos": 1,
+    "ready_videos": 0,
+    "platform_score": 89,
+    "critical_missing": 0,
+    "publishable": false,
+    "todo_progress": 33,
+    "todo_done": 1,
+    "todo_total": 3,
+    "review_approved": 1,
+    "review_pending": 0,
+    "review_rejected": 0,
+    "review_approval_rate": 100.0
+  }
+}

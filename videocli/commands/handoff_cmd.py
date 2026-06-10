@@ -128,11 +128,16 @@ def export_handoff(work_dir, platform_key, output_dir=None, overwrite=False):
     if os.path.exists(todo_state_src):
         shutil.copy2(todo_state_src, os.path.join(metadata_dir, 'todo_state.json'))
 
+    from ..utils import REVIEW_STATE_FILE
+    review_state_src = os.path.join(work_dir, REVIEW_STATE_FILE)
+    if os.path.exists(review_state_src):
+        shutil.copy2(review_state_src, os.path.join(metadata_dir, 'review_state.json'))
+
     project_tags = manifest.get('project_tags', [])
     project_meta = manifest.get('metadata', {})
     check_report = load_json(check_report_src, None) if os.path.exists(check_report_src) else None
 
-    plan = _build_platform_plan(manifest, platform_key, platform,
+    plan = _build_platform_plan(work_dir, manifest, platform_key, platform,
                                  project_tags, project_meta, check_report, relative=True)
 
     _write_platform_plan_md(plan, os.path.join(target_dir, f'{platform_key}_plan.md'), platform)

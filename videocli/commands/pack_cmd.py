@@ -9,6 +9,8 @@ from ..utils import (
     PROJECT_MANIFEST, TAGS_FILE, TODO_FILE, OPERATION_LOG, PACK_DIR
 )
 from .check_cmd import PLATFORMS
+from .todo_cmd import get_video_todo_status, get_platform_todo_summary
+from .review_cmd import get_platform_video_review, get_platform_review_summary, REVIEW_STATUSES
 
 
 def pack_project(work_dir, output_name=None, platforms=None, overwrite=False):
@@ -214,7 +216,7 @@ def _pack_platform_subdir(pack_dir, work_dir, manifest, platform_key, platform, 
         if os.path.exists(src):
             shutil.copy2(src, os.path.join(images_dir, img['name']))
 
-    plan = _build_platform_plan(manifest, platform_key, platform, project_tags, project_meta, check_report, relative=True)
+    plan = _build_platform_plan(work_dir, manifest, platform_key, platform, project_tags, project_meta, check_report, relative=True)
     plan_path = os.path.join(platform_dir, f'{platform_key}_plan.json')
     save_json(plan, plan_path)
 
@@ -229,7 +231,7 @@ def _pack_platform_subdir(pack_dir, work_dir, manifest, platform_key, platform, 
     print(f"  ✓ 平台目录: {platform_key}/ ({platform['name']})")
 
 
-def _build_platform_plan(manifest, platform_key, platform, project_tags, project_meta, check_report, relative=False):
+def _build_platform_plan(work_dir, manifest, platform_key, platform, project_tags, project_meta, check_report, relative=False):
     videos = manifest.get('videos', [])
     captions_info = manifest.get('captions', {})
 
@@ -290,21 +292,53 @@ def _build_platform_plan(manifest, platform_key, platform, project_tags, project
 
         hashtag_str = ' '.join([f'#{t}' for t in unique_tags]) if unique_tags else ''
 
+        todo_status = get_video_todo_status(work_dir, platform_key, video_name)
+        done_categories = set(todo_status.get('categories_done', {}).keys())
+
         todos = []
         if not status.get('has_cover', bool(cover_path)):
-            todos.append({'item': '未选择封面', 'priority': 'high', 'action': 'cover select'})
+            if 'cover' in done_categories:
+                todos.append({'item': '未选择封面', 'priority': 'high', 'action': 'cover select', 'done': True})
+            else:
+                todos.append({'item': '未选择封面', 'priority': 'high', 'action': 'cover select', 'done': False})
         if not status.get('has_title', bool(title)):
-            todos.append({'item': '缺少标题', 'priority': 'high', 'action': 'metadata set-video --title'})
+            if 'title' in done_categories:
+                todos.append({'item': '缺少标题', 'priority': 'high', 'action': 'metadata set-video --title', 'done': True})
+            else:
+                todos.append({'item': '缺少标题', 'priority': 'high', 'action': 'metadata set-video --title', 'done': False})
         if not status.get('has_description', bool(copy_text)):
-            todos.append({'item': '缺少文案描述', 'priority': 'medium', 'action': 'metadata set-video --copy'})
+            if 'description' in done_categories:
+                todos.append({'item': '缺少文案描述', 'priority': 'medium', 'action': 'metadata set-video --copy', 'done': True})
+            else:
+                todos.append({'item': '缺少文案描述', 'priority': 'medium', 'action': 'metadata set-video --copy', 'done': False})
         if not status.get('has_caption', bool(caption_files)):
-            todos.append({'item': '缺少字幕', 'priority': 'medium', 'action': 'caption generate'})
+            if 'caption' in done_categories:
+                todos.append({'item': '缺少字幕', 'priority': 'medium', 'action': 'caption generate', 'done': True})
+            else:
+                todos.append({'item': '缺少字幕', 'priority': 'medium', 'action': 'caption generate', 'done': False})
         if not status.get('duration_ok', True):
-            todos.append({'item': '时长不在推荐范围', 'priority': 'medium',
-                          'action': f"调整至 {platform['ideal_duration'][0]}-{platform['ideal_duration'][1]}秒"})
+            if 'duration' in done_categories:
+                todos.append({'item': '时长不在推荐范围', 'priority': 'medium',
+                              'action': f"调整至 {platform['ideal_duration'][0]}-{platform['ideal_duration'][1]}秒",
+                              'done': True})
+            else:
+                todos.append({'item': '时长不在推荐范围', 'priority': 'medium',
+                              'action': f"调整至 {platform['ideal_duration'][0]}-{platform['ideal_duration'][1]}秒",
+                              'done': False})
         if not status.get('ratio_ok', True):
-            todos.append({'item': '比例非最佳', 'priority': 'low',
-                          'action': f"建议调整为 {platform['ideal_ratio']}"})
+            if 'ratio' in done_categories:
+                todos.append({'item': '比例非最佳', 'priority': 'low',
+                              'action': f"建议调整为 {platform['ideal_ratio']}",
+                              'done': True})
+            else:
+                todos.append({'item': '比例非最佳', 'priority': 'low',
+                              'action': f"建议调整为 {platform['ideal_ratio']}",
+                              'done': False})
+
+        pending_todos = [t for t in todos if not t.get('done')]
+        review_info = get_platform_video_review(work_dir, platform_key, video_name)
+        review_status = review_info.get('status', 'pending')
+        review_label = REVIEW_STATUSES.get(review_status, REVIEW_STATUSES['pending'])
 
         video_rel = f"videos/{video_name}" if relative else video['path']
 
@@ -320,7 +354,15 @@ def _build_platform_plan(manifest, platform_key, platform, project_tags, project
             'duration': video.get('duration_formatted', status.get('duration', '未知')),
             'aspect_ratio': status.get('aspect_ratio', '未知'),
             'todos': todos,
-            'ready': len(todos) == 0,
+            'review_status': review_status,
+            'review_label': review_label['label'],
+            'review_icon': review_label['icon'],
+            'reviewer': review_info.get('reviewer', ''),
+            'review_comment': review_info.get('comment', ''),
+            'todo_done_count': todo_status.get('done', 0),
+            'todo_total': todo_status.get('total', len(todos)),
+            'todo_progress': todo_status.get('done', 0) / max(len(todos), 1) * 100,
+            'ready': len(pending_todos) == 0 and review_status == 'approved',
         })
 
     ready_count = sum(1 for v in plan_videos if v['ready'])
@@ -328,14 +370,18 @@ def _build_platform_plan(manifest, platform_key, platform, project_tags, project
     critical_missing = 0
     for v in plan_videos:
         for t in v['todos']:
-            if t['priority'] == 'high':
-                platform_score -= 15
-                critical_missing += 1
-            elif t['priority'] == 'medium':
-                platform_score -= 8
-            else:
-                platform_score -= 3
+            if not t.get('done'):
+                if t['priority'] == 'high':
+                    platform_score -= 15
+                    critical_missing += 1
+                elif t['priority'] == 'medium':
+                    platform_score -= 8
+                else:
+                    platform_score -= 3
     platform_score = max(0, platform_score)
+
+    review_summary = get_platform_review_summary(work_dir, platform_key)
+    todo_summary = get_platform_todo_summary(work_dir, platform_key)
 
     return {
         'platform_key': platform_key,
@@ -354,6 +400,13 @@ def _build_platform_plan(manifest, platform_key, platform, project_tags, project
             'platform_score': platform_score,
             'critical_missing': critical_missing,
             'publishable': ready_count == len(plan_videos) and len(plan_videos) > 0,
+            'todo_progress': todo_summary.get('progress', 0),
+            'todo_done': todo_summary.get('done', 0),
+            'todo_total': todo_summary.get('total', 0),
+            'review_approved': review_summary.get('approved', 0),
+            'review_pending': review_summary.get('pending', 0),
+            'review_rejected': review_summary.get('rejected', 0),
+            'review_approval_rate': review_summary.get('approval_rate', 0),
         },
     }
 
@@ -362,6 +415,12 @@ def _write_platform_plan_md(plan, md_path, platform):
     with open(md_path, 'w', encoding='utf-8') as f:
         f.write(f"# {plan['platform_name']} 发布计划\n\n")
         f.write(f"生成时间: {plan['generated_at'][:19].replace('T', ' ')}\n\n")
+
+        s = plan.get('summary', {})
+        f.write("## 完成进度\n\n")
+        f.write(f"- **待办完成**: {s.get('todo_done', 0)}/{s.get('todo_total', 0)} ({s.get('todo_progress', 0)}%)\n")
+        f.write(f"- **审核通过**: {s.get('review_approved', 0)}/{s.get('total_videos', 0)} ({s.get('review_approval_rate', 0)}%)\n")
+        f.write(f"- **平台评分**: {s.get('platform_score', 0)}/100\n\n")
 
         f.write("## 平台要求\n\n")
         label_map = {
@@ -376,10 +435,16 @@ def _write_platform_plan_md(plan, md_path, platform):
 
         s = plan['summary']
         status = "✅ 可发布" if s['publishable'] else "⚠️ 需完善"
-        f.write(f"## 发布状态: {status} (评分: {s['platform_score']}/100)\n\n")
+        f.write(f"## 发布状态: {status}\n\n")
 
         for v in plan['videos']:
             f.write(f"---\n\n## {v['video_name']}\n\n")
+            f.write(f"- **审核状态**: {v.get('review_icon', '')} {v.get('review_label', '待审核')}\n")
+            if v.get('reviewer'):
+                f.write(f"- **审核人**: {v['reviewer']}\n")
+            if v.get('review_comment'):
+                f.write(f"- **审核备注**: {v['review_comment']}\n")
+            f.write(f"- **待办进度**: {int(v.get('todo_progress', 0))}% ({v.get('todo_done_count', 0)}/{v.get('todo_total', 0)})\n")
             f.write(f"- **标题**: {v['title'] or '（未设置）'}\n")
             f.write(f"- **文案**: {v['copy'] or '（未设置）'}\n")
             f.write(f"- **话题**: {v['hashtag_str'] or '（无）'}\n")
@@ -395,8 +460,10 @@ def _write_platform_plan_md(plan, md_path, platform):
             if v['todos']:
                 f.write(f"\n### 待办事项\n\n")
                 for t in v['todos']:
+                    done_icon = "✅" if t.get('done') else "⬜"
                     priority_icon = {'high': '🔴', 'medium': '🟡', 'low': '🟢'}.get(t['priority'], '⚪')
-                    f.write(f"- {priority_icon} {t['item']} → `{t['action']}`\n")
+                    done_str = " (已完成)" if t.get('done') else ""
+                    f.write(f"- {done_icon} {priority_icon} {t['item']}{done_str} → `{t['action']}`\n")
                 f.write("\n")
 
 
@@ -422,6 +489,8 @@ def _write_platform_readme(plan, platform_dir, manifest):
         f.write(f"- **发布状态**: {status}  (评分 {s['platform_score']}/100)\n")
         f.write(f"- **视频总数**: {s['total_videos']}\n")
         f.write(f"- **就绪视频**: {s['ready_videos']}/{s['total_videos']}\n")
+        f.write(f"- **待办完成**: {s.get('todo_done', 0)}/{s.get('todo_total', 0)} ({s.get('todo_progress', 0)}%)\n")
+        f.write(f"- **审核通过**: {s.get('review_approved', 0)}/{s.get('total_videos', 0)} ({s.get('review_approval_rate', 0)}%)\n")
         f.write(f"- **高优先级缺失**: {s['critical_missing']}\n\n")
 
         f.write("---\n\n")
@@ -444,7 +513,12 @@ def _write_platform_readme(plan, platform_dir, manifest):
         f.write("## 🎬 视频发布清单\n\n")
         for i, v in enumerate(plan['videos'], 1):
             icon = "✅" if v['ready'] else "⚠️"
-            f.write(f"### {i}. {icon} {v['video_name']}\n\n")
+            f.write(f"### {i}. {v.get('review_icon', '')} {icon} {v['video_name']}\n\n")
+            f.write(f"- **审核状态**: {v.get('review_label', '待审核')}\n")
+            if v.get('reviewer'):
+                f.write(f"- **审核人**: {v['reviewer']}\n")
+            if v.get('review_comment'):
+                f.write(f"- **审核备注**: {v['review_comment']}\n")
             f.write(f"- **标题**: {v['title'] or '（待填写）'}\n")
             copy_display = (v['copy'][:100] + '...') if v['copy'] and len(v['copy']) > 100 else (v['copy'] or '（待编写）')
             f.write(f"- **文案**: {copy_display}\n")
@@ -456,13 +530,21 @@ def _write_platform_readme(plan, platform_dir, manifest):
                 f.write(f"- **封面**: （待选择）\n")
             if v['caption_files']:
                 f.write(f"- **字幕**: {', '.join('`'+c+'`' for c in v['caption_files'])}\n")
+            f.write(f"- **待办进度**: {int(v.get('todo_progress', 0))}% ({v.get('todo_done_count', 0)}/{v.get('todo_total', 0)})\n")
             f.write(f"- **时长**: {v['duration']}  |  **比例**: {v['aspect_ratio']}\n")
 
-            if v['todos']:
+            pending_todos = [t for t in v['todos'] if not t.get('done')]
+            if pending_todos:
                 f.write(f"\n  **待完成**:\n")
-                for t in v['todos']:
+                for t in pending_todos:
                     icon = {'high': '🔴', 'medium': '🟡', 'low': '🟢'}.get(t['priority'], '⚪')
                     f.write(f"  - {icon} {t['item']}\n")
+
+            done_todos = [t for t in v['todos'] if t.get('done')]
+            if done_todos:
+                f.write(f"\n  **已完成**:\n")
+                for t in done_todos:
+                    f.write(f"  - ✅ {t['item']}\n")
             f.write("\n")
 
         f.write("---\n\n")

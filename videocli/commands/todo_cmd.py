@@ -295,3 +295,79 @@ def mark_category_done(work_dir, category, platform=None, video=None):
 
     print(f"✅ 已批量标记 {marked} 项 {category} 类待办为完成")
     return state
+
+
+def is_todo_done(work_dir, platform_key, category, video_name=None):
+    """判断某个平台、某个类别的待办是否完成（供其他模块调用）"""
+    state = get_todo_state(work_dir)
+    todos = state.get('todos', {})
+
+    for key, todo in todos.items():
+        if todo.get('platform') != platform_key:
+            continue
+        if todo.get('category') != category:
+            continue
+        if video_name and todo.get('video') != video_name:
+            continue
+        if todo.get('status') == 'done':
+            return True
+
+    return False
+
+
+def get_platform_todo_summary(work_dir, platform_key):
+    """获取某平台待办完成概况（供其他模块调用）"""
+    state = get_todo_state(work_dir)
+    todos = state.get('todos', {})
+
+    total = 0
+    done = 0
+    high_pending = 0
+
+    for key, todo in todos.items():
+        if todo.get('platform') != platform_key:
+            continue
+        total += 1
+        if todo.get('status') == 'done':
+            done += 1
+        elif todo.get('priority') == 'high':
+            high_pending += 1
+
+    return {
+        'total': total,
+        'done': done,
+        'pending': total - done,
+        'high_pending': high_pending,
+        'progress': round(done / total * 100) if total > 0 else 0,
+    }
+
+
+def get_video_todo_status(work_dir, platform_key, video_name):
+    """获取视频在某平台的待办状态详情（供其他模块调用）"""
+    state = get_todo_state(work_dir)
+    todos = state.get('todos', {})
+
+    result = {
+        'total': 0,
+        'done': 0,
+        'categories_done': {},
+        'categories_pending': {},
+    }
+
+    for key, todo in todos.items():
+        if todo.get('platform') != platform_key:
+            continue
+        if todo.get('video') != video_name:
+            continue
+
+        category = todo.get('category', 'unknown')
+        is_done = todo.get('status') == 'done'
+        result['total'] += 1
+
+        if is_done:
+            result['done'] += 1
+            result['categories_done'][category] = todo.get('item')
+        else:
+            result['categories_pending'][category] = todo.get('item')
+
+    return result

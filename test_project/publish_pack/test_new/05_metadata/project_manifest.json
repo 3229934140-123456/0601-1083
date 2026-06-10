@@ -1,0 +1,205 @@
+{
+  "work_directory": "D:\\trae-bz\\TraeProjects\\1083\\test_project",
+  "project_tags": [
+    "海边",
+    "旅行",
+    "夏日"
+  ],
+  "metadata": {
+    "title": "夏日旅行Vlog",
+    "description": "记录美好的夏日旅行时光",
+    "platforms": [
+      "douyin",
+      "xiaohongshu"
+    ],
+    "author": "创作者小明",
+    "notes": "记得加背景音乐"
+  },
+  "summary": {
+    "total_files": 14,
+    "videos": 1,
+    "images": 2,
+    "audios": 0,
+    "subtitles": 0,
+    "other_files": 11,
+    "subdirectories": 5
+  },
+  "videos": [
+    {
+      "name": "demo_video.mp4",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\video_assets\\demo_video.mp4",
+      "size": 0,
+      "size_mb": 0.0,
+      "extension": ".mp4",
+      "modified": "2026-06-10T19:37:01.282919",
+      "created": "2026-06-10T19:37:01.282919",
+      "has_ffprobe": false,
+      "note": "ffprobe not available, limited info",
+      "tags": [
+        "测试标签1",
+        "测试标签2"
+      ],
+      "metadata": {
+        "title": "海边日落Vlog",
+        "description": "夕阳下的海边美景",
+        "copy": "今天带大家来看美丽的海边日落，超级治愈！",
+        "tags": [
+          "海边",
+          "日落",
+          "Vlog"
+        ]
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "landscape_photo.jpg",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\image_assets\\landscape_photo.jpg",
+      "size": 33269,
+      "size_mb": 0.03,
+      "extension": ".jpg",
+      "modified": "2026-06-10T19:37:01.180418",
+      "created": "2026-06-10T19:37:01.174063",
+      "width": 1920,
+      "height": 1080,
+      "aspect_ratio": 1.7778,
+      "orientation": "landscape",
+      "mode": "RGB",
+      "format": "JPEG"
+    },
+    {
+      "name": "portrait_photo.png",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\image_assets\\portrait_photo.png",
+      "size": 10407,
+      "size_mb": 0.01,
+      "extension": ".png",
+      "modified": "2026-06-10T19:37:01.216391",
+      "created": "2026-06-10T19:37:01.202574",
+      "width": 1080,
+      "height": 1920,
+      "aspect_ratio": 0.5625,
+      "orientation": "portrait",
+      "mode": "RGB",
+      "format": "PNG"
+    }
+  ],
+  "audios": [],
+  "subtitles": [],
+  "other_files": [
+    {
+      "name": "check_report.json",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\check_report.json",
+      "size": 1714,
+      "size_mb": 0.0,
+      "extension": ".json",
+      "modified": "2026-06-10T19:56:22.126387",
+      "created": "2026-06-10T19:42:34.938980"
+    },
+    {
+      "name": "metadata_import.csv",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\metadata_import.csv",
+      "size": 172,
+      "size_mb": 0.0,
+      "extension": ".csv",
+      "modified": "2026-06-10T19:56:36.916268",
+      "created": "2026-06-10T19:56:36.040637"
+    },
+    {
+      "name": "operation_log.json",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\operation_log.json",
+      "size": 5109,
+      "size_mb": 0.0,
+      "extension": ".json",
+      "modified": "2026-06-10T19:57:10.686428",
+      "created": "2026-06-10T19:37:18.186506"
+    },
+    {
+      "name": "project_manifest.json",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\project_manifest.json",
+      "size": 4049,
+      "size_mb": 0.0,
+      "extension": ".json",
+      "modified": "2026-06-10T19:57:10.677529",
+      "created": "2026-06-10T19:37:18.184321"
+    },
+    {
+      "name": "tags.txt",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\tags.txt",
+      "size": 59,
+      "size_mb": 0.0,
+      "extension": ".txt",
+      "modified": "2026-06-10T19:43:00.978782",
+      "created": "2026-06-10T19:37:34.516680"
+    },
+    {
+      "name": "all_plans.json",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\publish_plans\\all_plans.json",
+      "size": 4270,
+      "size_mb": 0.0,
+      "extension": ".json",
+      "modified": "2026-06-10T19:55:55.654413",
+      "created": "2026-06-10T19:55:55.653412"
+    },
+    {
+      "name": "all_plans.md",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\publish_plans\\all_plans.md",
+      "size": 1626,
+      "size_mb": 0.0,
+      "extension": ".md",
+      "modified": "2026-06-10T19:55:55.654413",
+      "created": "2026-06-10T19:55:55.654413"
+    },
+    {
+      "name": "douyin_plan.json",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\publish_plans\\douyin\\douyin_plan.json",
+      "size": 1726,
+      "size_mb": 0.0,
+      "extension": ".json",
+      "modified": "2026-06-10T19:55:55.646255",
+      "created": "2026-06-10T19:55:55.644744"
+    },
+    {
+      "name": "douyin_plan.md",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\publish_plans\\douyin\\douyin_plan.md",
+      "size": 854,
+      "size_mb": 0.0,
+      "extension": ".md",
+      "modified": "2026-06-10T19:55:55.646255",
+      "created": "2026-06-10T19:55:55.646255"
+    },
+    {
+      "name": "xiaohongshu_plan.json",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\publish_plans\\xiaohongshu\\xiaohongshu_plan.json",
+      "size": 1735,
+      "size_mb": 0.0,
+      "extension": ".json",
+      "modified": "2026-06-10T19:55:55.651411",
+      "created": "2026-06-10T19:55:55.650589"
+    },
+    {
+      "name": "xiaohongshu_plan.md",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\publish_plans\\xiaohongshu\\xiaohongshu_plan.md",
+      "size": 858,
+      "size_mb": 0.0,
+      "extension": ".md",
+      "modified": "2026-06-10T19:55:55.652413",
+      "created": "2026-06-10T19:55:55.651411"
+    }
+  ],
+  "subdirectories": [
+    "D:\\trae-bz\\TraeProjects\\1083\\test_project\\image_assets",
+    "D:\\trae-bz\\TraeProjects\\1083\\test_project\\publish_plans",
+    "D:\\trae-bz\\TraeProjects\\1083\\test_project\\video_assets",
+    "D:\\trae-bz\\TraeProjects\\1083\\test_project\\publish_plans\\douyin",
+    "D:\\trae-bz\\TraeProjects\\1083\\test_project\\publish_plans\\xiaohongshu"
+  ],
+  "covers": [],
+  "captions": {
+    "demo_video.mp4": {
+      "srt": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\captions\\demo_video.srt",
+      "vtt": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\captions\\demo_video.vtt",
+      "lines_count": 6,
+      "template": "story"
+    }
+  }
+}

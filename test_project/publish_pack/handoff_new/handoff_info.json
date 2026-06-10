@@ -1,0 +1,26 @@
+{
+  "platform_key": "douyin",
+  "platform_name": "抖音",
+  "generated_at": "2026-06-10T20:40:27.947242",
+  "output_dir": "handoff_new",
+  "contents": {
+    "videos": 1,
+    "covers": 0,
+    "captions": 2,
+    "images": 2
+  },
+  "summary": {
+    "total_videos": 1,
+    "ready_videos": 0,
+    "platform_score": 89,
+    "critical_missing": 0,
+    "publishable": false,
+    "todo_progress": 33,
+    "todo_done": 1,
+    "todo_total": 3,
+    "review_approved": 1,
+    "review_pending": 0,
+    "review_rejected": 0,
+    "review_approval_rate": 100.0
+  }
+}

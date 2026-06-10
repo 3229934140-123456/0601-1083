@@ -361,15 +361,5 @@
       "videos_count": 1,
       "covers_count": 0
     }
-  },
-  {
-    "timestamp": "2026-06-10T20:40:27.948756",
-    "operation": "handoff_export",
-    "details": {
-      "platform": "douyin",
-      "output_dir": "handoff_new",
-      "videos": 1,
-      "covers": 0
-    }
   }
 ]

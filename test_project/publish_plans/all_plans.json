@@ -1,8 +1,7 @@
 {
-  "generated_at": "2026-06-10T19:55:55.652413",
+  "generated_at": "2026-06-10T20:36:34.789897",
   "platforms": [
-    "douyin",
-    "xiaohongshu"
+    "douyin"
   ],
   "project_title": "夏日旅行Vlog",
   "project_author": "创作者小明",
@@ -10,7 +9,7 @@
     "douyin": {
       "platform_key": "douyin",
       "platform_name": "抖音",
-      "generated_at": "2026-06-10T19:55:55.641321",
+      "generated_at": "2026-06-10T20:36:34.786802",
       "platform_requirements": {
         "ideal_duration": "15-60秒",
         "ideal_ratio": "9:16",
@@ -21,18 +20,18 @@
         {
           "video_name": "demo_video.mp4",
           "video_path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\video_assets\\demo_video.mp4",
-          "title": "海边日落",
-          "copy": "今天带大家来看美丽的海边日落~",
+          "title": "海边日落Vlog",
+          "copy": "今天带大家来看美丽的海边日落，超级治愈！",
           "hashtags": [
             "测试标签1",
             "测试标签2",
             "海边",
             "日落",
-            "风景",
+            "Vlog",
             "旅行",
             "夏日"
           ],
-          "hashtag_str": "#测试标签1 #测试标签2 #海边 #日落 #风景 #海边 #旅行 #夏日",
+          "hashtag_str": "#测试标签1 #测试标签2 #海边 #日落 #Vlog #海边 #旅行 #夏日",
           "cover_path": "",
           "caption_files": [
             "D:\\trae-bz\\TraeProjects\\1083\\test_project\\captions\\demo_video.srt",
@@ -44,94 +43,51 @@
             {
               "item": "未选择封面",
               "priority": "high",
-              "action": "cover select"
+              "action": "cover select",
+              "done": true
             },
             {
               "item": "时长不符合推荐范围",
               "priority": "medium",
-              "action": "调整时长至 15-60秒"
+              "action": "调整时长至 15-60秒",
+              "done": false
             },
             {
               "item": "比例非最佳",
               "priority": "low",
-              "action": "建议调整为 9:16"
+              "action": "建议调整为 9:16",
+              "done": false
             }
           ],
+          "review_status": "pending",
+          "review_label": "待审核",
+          "review_icon": "⏳",
+          "reviewer": "",
+          "review_comment": "",
+          "todo_done_count": 1,
+          "todo_total": 3,
+          "todo_progress": 33.33333333333333,
           "ready": false
         }
       ],
       "summary": {
         "total_videos": 1,
         "ready_videos": 0,
-        "platform_score": 74,
-        "critical_missing": 1,
-        "publishable": false
-      }
-    },
-    "xiaohongshu": {
-      "platform_key": "xiaohongshu",
-      "platform_name": "小红书",
-      "generated_at": "2026-06-10T19:55:55.641321",
-      "platform_requirements": {
-        "ideal_duration": "30-300秒",
-        "ideal_ratio": "3:4",
-        "max_duration": "900秒",
-        "max_file_size": "2048MB"
-      },
-      "videos": [
-        {
-          "video_name": "demo_video.mp4",
-          "video_path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\video_assets\\demo_video.mp4",
-          "title": "海边日落",
-          "copy": "今天带大家来看美丽的海边日落~",
-          "hashtags": [
-            "测试标签1",
-            "测试标签2",
-            "海边",
-            "日落",
-            "风景",
-            "旅行",
-            "夏日"
-          ],
-          "hashtag_str": "#测试标签1 #测试标签2 #海边 #日落 #风景 #海边 #旅行 #夏日",
-          "cover_path": "",
-          "caption_files": [
-            "D:\\trae-bz\\TraeProjects\\1083\\test_project\\captions\\demo_video.srt",
-            "D:\\trae-bz\\TraeProjects\\1083\\test_project\\captions\\demo_video.vtt"
-          ],
-          "duration": "未知",
-          "aspect_ratio": "未知",
-          "todos": [
-            {
-              "item": "未选择封面",
-              "priority": "high",
-              "action": "cover select"
-            },
-            {
-              "item": "时长不符合推荐范围",
-              "priority": "medium",
-              "action": "调整时长至 30-300秒"
-            },
-            {
-              "item": "比例非最佳",
-              "priority": "low",
-              "action": "建议调整为 3:4"
-            }
-          ],
-          "ready": false
-        }
-      ],
-      "summary": {
-        "total_videos": 1,
-        "ready_videos": 0,
-        "platform_score": 74,
-        "critical_missing": 1,
-        "publishable": false
+        "platform_score": 89,
+        "critical_missing": 0,
+        "publishable": false,
+        "todo_progress": 33,
+        "todo_done": 1,
+        "todo_total": 3,
+        "review_approved": 0,
+        "review_pending": 1,
+        "review_rejected": 0,
+        "review_approval_rate": 0.0
       }
     }
   },
   "summary": {
-    "total_platforms": 2,
+    "total_platforms": 1,
     "publishable_platforms": 0
   }
 }

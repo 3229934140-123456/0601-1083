@@ -1,0 +1,60 @@
+{
+  "checked_at": "2026-06-10T19:57:43.843908",
+  "errors": [],
+  "warnings": [
+    "demo_video.mp4: 无法获取视频元数据（建议安装 ffmpeg）",
+    "尚未提取候选封面，使用 cover extract 提取"
+  ],
+  "suggestions": [],
+  "platforms": {
+    "douyin": {
+      "score": 60,
+      "issues": [
+        "demo_video.mp4: 无法获取视频时长，无法判断是否符合平台要求",
+        "demo_video.mp4: 无法获取视频分辨率，无法判断比例是否符合要求",
+        "demo_video.mp4: 未选择封面"
+      ],
+      "tips": []
+    },
+    "xiaohongshu": {
+      "score": 60,
+      "issues": [
+        "demo_video.mp4: 无法获取视频时长，无法判断是否符合平台要求",
+        "demo_video.mp4: 无法获取视频分辨率，无法判断比例是否符合要求",
+        "demo_video.mp4: 未选择封面"
+      ],
+      "tips": []
+    }
+  },
+  "video_status_by_platform": {
+    "douyin": [
+      {
+        "video_name": "demo_video.mp4",
+        "duration": "未知",
+        "duration_ok": false,
+        "aspect_ratio": "未知",
+        "ratio_ok": false,
+        "has_cover": false,
+        "has_caption": true,
+        "title": "海边日落Vlog",
+        "has_title": true,
+        "has_description": true
+      }
+    ],
+    "xiaohongshu": [
+      {
+        "video_name": "demo_video.mp4",
+        "duration": "未知",
+        "duration_ok": false,
+        "aspect_ratio": "未知",
+        "ratio_ok": false,
+        "has_cover": false,
+        "has_caption": true,
+        "title": "海边日落Vlog",
+        "has_title": true,
+        "has_description": true
+      }
+    ]
+  },
+  "total_score": 60
+}

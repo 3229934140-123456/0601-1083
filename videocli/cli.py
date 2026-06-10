@@ -17,6 +17,10 @@ from .commands.todo_cmd import (
 )
 from .commands.handoff_cmd import export_handoff, list_handoffs
 from .commands.compare_cmd import compare_platforms
+from .commands.review_cmd import (
+    set_review_status, batch_review, show_reviews
+)
+from .commands.validate_cmd import validate_pack, validate_project
 
 load_dotenv()
 
@@ -354,6 +358,78 @@ def compare_platforms_cmd(ctx, video, platforms, export_format):
     """跨平台对比同一视频的发布信息"""
     work_dir = ctx.obj['work_dir']
     compare_platforms(work_dir, video_filter=video, platforms=platforms, export_format=export_format)
+
+
+@cli.group()
+def review():
+    """管理发布计划审核流程"""
+    pass
+
+
+@review.command('set')
+@click.argument('platform')
+@click.argument('video')
+@click.option('-s', '--status', default='pending',
+              type=click.Choice(['pending', 'approved', 'rejected']),
+              help='审核状态')
+@click.option('-r', '--reviewer', default=None, help='审核人')
+@click.option('-c', '--comment', default=None, help='审核备注')
+@click.pass_context
+def review_set(ctx, platform, video, status, reviewer, comment):
+    """设置单个视频的审核状态"""
+    work_dir = ctx.obj['work_dir']
+    set_review_status(work_dir, platform, video, status,
+                      reviewer=reviewer, comment=comment)
+
+
+@review.command('batch')
+@click.argument('platform')
+@click.option('-s', '--status', default='approved',
+              type=click.Choice(['pending', 'approved', 'rejected']),
+              help='审核状态')
+@click.option('-r', '--reviewer', default=None, help='审核人')
+@click.option('-c', '--comment', default=None, help='审核备注')
+@click.option('--all', 'all_videos', is_flag=True, default=False, help='审核该平台所有视频')
+@click.pass_context
+def review_batch(ctx, platform, status, reviewer, comment, all_videos):
+    """批量设置审核状态（需指定 --all 或平台+视频列表）"""
+    work_dir = ctx.obj['work_dir']
+    batch_review(work_dir, platform, status,
+                 reviewer=reviewer, comment=comment, all_videos=all_videos)
+
+
+@review.command('show')
+@click.option('-p', '--platform', default=None, help='按平台筛选')
+@click.option('-s', '--status', default=None,
+              type=click.Choice(['pending', 'approved', 'rejected']),
+              help='按状态筛选')
+@click.pass_context
+def review_show(ctx, platform, status):
+    """显示审核状态总览"""
+    work_dir = ctx.obj['work_dir']
+    show_reviews(work_dir, platform=platform, status_filter=status)
+
+
+@cli.group()
+def validate():
+    """校验项目或交付包完整性"""
+    pass
+
+
+@validate.command('pack')
+@click.argument('pack_dir')
+@click.pass_context
+def validate_pack_cmd(ctx, pack_dir):
+    """校验交付包：检查素材文件、计划JSON、README等完整性"""
+    validate_pack(pack_dir)
+
+
+@validate.command('project')
+@click.pass_context
+def validate_project_cmd(ctx):
+    """校验当前项目：检查清单、素材路径等"""
+    work_dir = ctx.obj['work_dir']
+    validate_project(work_dir)
 
 
 def main():
