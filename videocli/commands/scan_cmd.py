@@ -44,10 +44,13 @@ def scan_directory(work_dir, recursive=True, include_subdirs=None):
                     if abs_path in old_videos:
                         old_tags = old_videos[abs_path].get('tags', [])
                         old_cover = old_videos[abs_path].get('selected_cover')
+                        old_metadata = old_videos[abs_path].get('metadata', {})
                         if old_tags:
                             file_info['tags'] = old_tags
                         if old_cover:
                             file_info['selected_cover'] = old_cover
+                        if old_metadata:
+                            file_info['metadata'] = old_metadata
                     videos.append(file_info)
                 elif is_image(filename):
                     img_detail = get_image_dimensions(filepath)
@@ -79,10 +82,13 @@ def scan_directory(work_dir, recursive=True, include_subdirs=None):
                     if abs_path in old_videos:
                         old_tags = old_videos[abs_path].get('tags', [])
                         old_cover = old_videos[abs_path].get('selected_cover')
+                        old_metadata = old_videos[abs_path].get('metadata', {})
                         if old_tags:
                             file_info['tags'] = old_tags
                         if old_cover:
                             file_info['selected_cover'] = old_cover
+                        if old_metadata:
+                            file_info['metadata'] = old_metadata
                     videos.append(file_info)
                 elif is_image(item):
                     img_detail = get_image_dimensions(item_path)
@@ -104,8 +110,7 @@ def scan_directory(work_dir, recursive=True, include_subdirs=None):
     manifest = {
         'work_directory': work_dir,
         'project_tags': old_manifest.get('project_tags', []),
-        'title': old_manifest.get('title', ''),
-        'description': old_manifest.get('description', ''),
+        'metadata': old_manifest.get('metadata', {}),
         'summary': {
             'total_files': len(videos) + len(images) + len(audios) + len(subtitles) + len(other_files),
             'videos': len(videos),

@@ -1,8 +1,9 @@
 import os
 from pathlib import Path
+from datetime import datetime
 from tabulate import tabulate
 
-from ..utils import load_json, log_operation, PROJECT_MANIFEST
+from ..utils import load_json, save_json, log_operation, PROJECT_MANIFEST, CHECK_REPORT
 from ..media import format_duration
 
 
@@ -85,7 +86,8 @@ def check_project(work_dir, platforms=None):
         return None
     
     if platforms is None:
-        platforms = list(PLATFORMS.keys())
+        metadata = manifest.get('metadata', {})
+        platforms = metadata.get('platforms', list(PLATFORMS.keys()))
     elif isinstance(platforms, str):
         platforms = [p.strip() for p in platforms.split(',') if p.strip()]
     
@@ -128,6 +130,8 @@ def check_project(work_dir, platforms=None):
     print("-" * 50)
     
     platform_recommendations = {}
+    platform_videos_status = {}
+    
     for platform_key in platforms:
         platform = PLATFORMS.get(platform_key)
         if not platform:
@@ -135,6 +139,12 @@ def check_project(work_dir, platforms=None):
         
         rec = _check_platform_compatibility(manifest, platform)
         platform_recommendations[platform_key] = rec
+        
+        video_statuses = []
+        for video in manifest.get('videos', []):
+            video_status = _check_video_for_platform(video, platform, manifest)
+            video_statuses.append(video_status)
+        platform_videos_status[platform_key] = video_statuses
         
         status = "✅ 推荐" if rec['score'] >= 80 else ("⚠️  一般" if rec['score'] >= 50 else "❌ 不推荐")
         print(f"\n  {platform['name']} ({status}) - 适配度: {rec['score']}/100")
@@ -146,23 +156,114 @@ def check_project(work_dir, platforms=None):
             for tip in rec['tips']:
                 print(f"    💡 {tip}")
     
+    print("\n📋 各平台视频发布状态")
+    print("=" * 70)
+    for platform_key in platforms:
+        platform = PLATFORMS.get(platform_key)
+        if not platform:
+            continue
+        
+        print(f"\n【{platform['name']}】")
+        print("-" * 50)
+        
+        table_data = []
+        for video_status in platform_videos_status[platform_key]:
+            video_name = video_status['video_name']
+            table_data.append([
+                '时长', video_status['duration'],
+                '✓' if video_status['duration_ok'] else '✗'
+            ])
+            table_data.append([
+                '比例', video_status['aspect_ratio'],
+                '✓' if video_status['ratio_ok'] else '✗'
+            ])
+            table_data.append([
+                '封面', '已选择' if video_status['has_cover'] else '未选择',
+                '✓' if video_status['has_cover'] else '✗'
+            ])
+            table_data.append([
+                '标题', video_status['title'] or '未设置',
+                '✓' if video_status['has_title'] else '✗'
+            ])
+            table_data.append([
+                '字幕', '已生成' if video_status['has_caption'] else '未生成',
+                '✓' if video_status['has_caption'] else '✗'
+            ])
+            table_data.append([
+                '描述', '已设置' if video_status['has_description'] else '未设置',
+                '✓' if video_status['has_description'] else '✗'
+            ])
+            table_data.append(['', '', ''])
+        
+        if table_data:
+            table_data.pop()
+            print(tabulate(table_data, headers=['检查项', video_name, '状态'], tablefmt='simple'))
+    
     result = {
+        'checked_at': datetime.now().isoformat(),
         'errors': issues,
         'warnings': warnings,
         'suggestions': suggestions,
         'platforms': platform_recommendations,
+        'video_status_by_platform': platform_videos_status,
         'total_score': _calculate_overall_score(platform_recommendations),
     }
+    
+    report_path = os.path.join(work_dir, CHECK_REPORT)
+    save_json(result, report_path)
     
     log_operation(work_dir, 'check', {
         'errors_count': len(issues),
         'warnings_count': len(warnings),
-        'platforms_checked': platforms
+        'platforms_checked': platforms,
+        'report_saved': CHECK_REPORT
     })
     
     print(f"\n📊 总体评分: {result['total_score']}/100")
+    print(f"💾 检查报告已保存至: {CHECK_REPORT}")
     
     return result
+
+
+def _check_video_for_platform(video, platform, manifest):
+    """检查单个视频在特定平台的发布状态"""
+    duration = video.get('duration', 0)
+    width = video.get('width')
+    height = video.get('height')
+    
+    min_dur, max_dur = platform['ideal_duration']
+    duration_ok = min_dur <= duration <= max_dur if duration > 0 else False
+    
+    ratio_ok = False
+    aspect_ratio = f"{width}:{height}" if width and height else "未知"
+    if width and height:
+        ideal_ratio = platform['ideal_ratio']
+        ratio_w, ratio_h = _parse_ratio(ideal_ratio)
+        actual_ratio = width / height
+        ideal_ratio_value = ratio_w / ratio_h
+        ratio_diff = abs(actual_ratio - ideal_ratio_value) / ideal_ratio_value
+        ratio_ok = ratio_diff <= 0.15
+    
+    has_cover = bool(video.get('selected_cover'))
+    has_caption = video['name'] in manifest.get('captions', {})
+    
+    video_meta = video.get('metadata', {})
+    title = video_meta.get('title')
+    has_title = bool(title)
+    has_description = bool(video_meta.get('description') or video_meta.get('copy'))
+    
+    return {
+        'video_name': video['name'],
+        'duration': format_duration(duration) if duration else "未知",
+        'duration_ok': duration_ok,
+        'aspect_ratio': aspect_ratio,
+        'ratio_ok': ratio_ok,
+        'has_cover': has_cover,
+        'has_caption': has_caption,
+        'title': title,
+        'has_title': has_title,
+        'has_description': has_description,
+    }
 
 
 def _check_videos(manifest):
@@ -237,11 +338,12 @@ def _check_missing_items(manifest):
     if videos_without_cover and len(videos) > 1:
         warnings.append(f"有 {len(videos_without_cover)} 个视频未选择封面: {', '.join(videos_without_cover)}")
     
-    if not manifest.get('title'):
-        warnings.append("项目缺少标题，请设置标题")
+    metadata = manifest.get('metadata', {})
+    if not metadata.get('title'):
+        warnings.append("项目缺少标题，请使用 metadata set --title 设置")
     
-    if not manifest.get('description'):
-        warnings.append("项目缺少描述，请添加描述文案")
+    if not metadata.get('description'):
+        warnings.append("项目缺少描述，请使用 metadata set --desc 设置")
     
     return {'errors': errors, 'warnings': warnings}
 

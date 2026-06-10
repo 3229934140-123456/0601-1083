@@ -1,12 +1,27 @@
 {
   "work_directory": "D:\\trae-bz\\TraeProjects\\1083\\test_project",
+  "project_tags": [
+    "海边",
+    "旅行",
+    "夏日"
+  ],
+  "metadata": {
+    "title": "夏日旅行Vlog",
+    "description": "记录美好的夏日旅行时光",
+    "platforms": [
+      "douyin",
+      "xiaohongshu"
+    ],
+    "author": "创作者小明",
+    "notes": "记得加背景音乐"
+  },
   "summary": {
     "total_files": 7,
     "videos": 1,
-    "images": 3,
+    "images": 2,
     "audios": 0,
     "subtitles": 0,
-    "other_files": 3,
+    "other_files": 4,
     "subdirectories": 2
   },
   "videos": [
@@ -16,10 +31,24 @@
       "size": 0,
       "size_mb": 0.0,
       "extension": ".mp4",
-      "modified": "2026-06-10T19:12:28.282745",
-      "created": "2026-06-10T19:12:28.282745",
+      "modified": "2026-06-10T19:37:01.282919",
+      "created": "2026-06-10T19:37:01.282919",
       "has_ffprobe": false,
-      "note": "ffprobe not available, limited info"
+      "note": "ffprobe not available, limited info",
+      "tags": [
+        "测试标签1",
+        "测试标签2"
+      ],
+      "metadata": {
+        "title": "海边日落",
+        "description": "夕阳下的海边美景",
+        "copy": "今天带大家来看美丽的海边日落~",
+        "tags": [
+          "海边",
+          "日落",
+          "风景"
+        ]
+      }
     }
   ],
   "images": [
@@ -29,8 +58,8 @@
       "size": 33269,
       "size_mb": 0.03,
       "extension": ".jpg",
-      "modified": "2026-06-10T19:11:07.227207",
-      "created": "2026-06-10T19:11:07.222133",
+      "modified": "2026-06-10T19:37:01.180418",
+      "created": "2026-06-10T19:37:01.174063",
       "width": 1920,
       "height": 1080,
       "aspect_ratio": 1.7778,
@@ -44,42 +73,36 @@
       "size": 10407,
       "size_mb": 0.01,
       "extension": ".png",
-      "modified": "2026-06-10T19:11:07.259509",
-      "created": "2026-06-10T19:11:07.246725",
+      "modified": "2026-06-10T19:37:01.216391",
+      "created": "2026-06-10T19:37:01.202574",
       "width": 1080,
       "height": 1920,
       "aspect_ratio": 0.5625,
       "orientation": "portrait",
       "mode": "RGB",
       "format": "PNG"
-    },
-    {
-      "name": "small_image.jpg",
-      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\image_assets\\small_image.jpg",
-      "size": 8229,
-      "size_mb": 0.01,
-      "extension": ".jpg",
-      "modified": "2026-06-10T19:11:07.259509",
-      "created": "2026-06-10T19:11:07.259509",
-      "width": 800,
-      "height": 600,
-      "aspect_ratio": 1.3333,
-      "orientation": "landscape",
-      "mode": "RGB",
-      "format": "JPEG"
     }
   ],
   "audios": [],
   "subtitles": [],
   "other_files": [
     {
-      "name": "operation_log.json",
-      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\operation_log.json",
-      "size": 880,
+      "name": "check_report.json",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\check_report.json",
+      "size": 1493,
       "size_mb": 0.0,
       "extension": ".json",
-      "modified": "2026-06-10T19:12:14.887644",
-      "created": "2026-06-10T19:11:40.767683"
+      "modified": "2026-06-10T19:42:34.938980",
+      "created": "2026-06-10T19:42:34.938980"
+    },
+    {
+      "name": "operation_log.json",
+      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\operation_log.json",
+      "size": 3334,
+      "size_mb": 0.0,
+      "extension": ".json",
+      "modified": "2026-06-10T19:43:29.108129",
+      "created": "2026-06-10T19:37:18.186506"
     },
     {
       "name": "project_manifest.json",
@@ -87,23 +110,24 @@
       "size": 2826,
       "size_mb": 0.0,
       "extension": ".json",
-      "modified": "2026-06-10T19:12:14.885849",
-      "created": "2026-06-10T19:11:40.766265"
+      "modified": "2026-06-10T19:43:01.338579",
+      "created": "2026-06-10T19:37:18.184321"
     },
     {
       "name": "tags.txt",
       "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\tags.txt",
-      "size": 34,
+      "size": 59,
       "size_mb": 0.0,
       "extension": ".txt",
-      "modified": "2026-06-10T19:11:52.091585",
-      "created": "2026-06-10T19:11:52.091585"
+      "modified": "2026-06-10T19:43:00.978782",
+      "created": "2026-06-10T19:37:34.516680"
     }
   ],
   "subdirectories": [
     "D:\\trae-bz\\TraeProjects\\1083\\test_project\\image_assets",
     "D:\\trae-bz\\TraeProjects\\1083\\test_project\\video_assets"
   ],
+  "covers": [],
   "captions": {
     "demo_video.mp4": {
       "srt": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\captions\\demo_video.srt",

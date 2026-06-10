@@ -9,6 +9,7 @@ from .commands.cover_cmd import extract_covers, list_covers, select_cover
 from .commands.caption_cmd import generate_caption_draft, list_captions
 from .commands.check_cmd import check_project
 from .commands.pack_cmd import pack_project, list_packs
+from .commands.metadata_cmd import set_project_metadata, set_video_metadata, show_metadata
 
 load_dotenv()
 
@@ -128,6 +129,49 @@ def caption_list(ctx):
     list_captions(work_dir)
 
 
+@cli.group()
+def metadata():
+    """管理项目和视频元数据"""
+    pass
+
+
+@metadata.command('set')
+@click.option('--title', default=None, help='项目标题')
+@click.option('--desc', 'description', default=None, help='项目描述')
+@click.option('--platforms', default=None, help='发布平台，多个用逗号分隔')
+@click.option('--author', default=None, help='作者信息')
+@click.option('--notes', default=None, help='备注信息')
+@click.pass_context
+def metadata_set(ctx, title, description, platforms, author, notes):
+    """设置项目元数据"""
+    work_dir = ctx.obj['work_dir']
+    set_project_metadata(work_dir, title=title, description=description,
+                         platforms=platforms, author=author, notes=notes)
+
+
+@metadata.command('set-video')
+@click.argument('video_path')
+@click.option('--title', default=None, help='视频标题')
+@click.option('--desc', 'description', default=None, help='视频描述')
+@click.option('--copy', default=None, help='视频文案')
+@click.option('--tags', default=None, help='自定义标签，多个用逗号分隔')
+@click.pass_context
+def metadata_set_video(ctx, video_path, title, description, copy, tags):
+    """设置单个视频的元数据"""
+    work_dir = ctx.obj['work_dir']
+    set_video_metadata(work_dir, video_path, title=title, description=description,
+                     copy=copy, tags=tags)
+
+
+@metadata.command('show')
+@click.option('-v', '--video', default=None, help='指定视频查看，不指定则显示项目')
+@click.pass_context
+def metadata_show(ctx, video):
+    """显示元数据"""
+    work_dir = ctx.obj['work_dir']
+    show_metadata(work_dir, video_path=video)
+
+
 @cli.command()
 @click.option('-p', '--platforms', default=None,
               help='目标平台，多个用逗号分隔 (douyin,kuaishou,xiaohongshu,bilibili,weixin)')
@@ -147,11 +191,12 @@ def pack():
 @pack.command('create')
 @click.option('-n', '--name', default=None, help='发布包名称')
 @click.option('-p', '--platforms', default=None, help='目标平台')
+@click.option('--overwrite', is_flag=True, default=False, help='如果存在同名目录则覆盖')
 @click.pass_context
-def pack_create(ctx, name, platforms):
+def pack_create(ctx, name, platforms, overwrite):
     """打包为发布目录"""
     work_dir = ctx.obj['work_dir']
-    pack_project(work_dir, output_name=name, platforms=platforms)
+    pack_project(work_dir, output_name=name, platforms=platforms, overwrite=overwrite)
 
 
 @pack.command('list')

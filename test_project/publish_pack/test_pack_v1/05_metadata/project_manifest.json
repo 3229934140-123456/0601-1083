@@ -16,12 +16,12 @@
     "notes": "记得加背景音乐"
   },
   "summary": {
-    "total_files": 7,
+    "total_files": 3,
     "videos": 1,
     "images": 2,
     "audios": 0,
     "subtitles": 0,
-    "other_files": 4,
+    "other_files": 0,
     "subdirectories": 2
   },
   "videos": [
@@ -85,44 +85,7 @@
   ],
   "audios": [],
   "subtitles": [],
-  "other_files": [
-    {
-      "name": "check_report.json",
-      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\check_report.json",
-      "size": 1493,
-      "size_mb": 0.0,
-      "extension": ".json",
-      "modified": "2026-06-10T19:42:34.938980",
-      "created": "2026-06-10T19:42:34.938980"
-    },
-    {
-      "name": "operation_log.json",
-      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\operation_log.json",
-      "size": 3334,
-      "size_mb": 0.0,
-      "extension": ".json",
-      "modified": "2026-06-10T19:43:29.108129",
-      "created": "2026-06-10T19:37:18.186506"
-    },
-    {
-      "name": "project_manifest.json",
-      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\project_manifest.json",
-      "size": 2826,
-      "size_mb": 0.0,
-      "extension": ".json",
-      "modified": "2026-06-10T19:43:01.338579",
-      "created": "2026-06-10T19:37:18.184321"
-    },
-    {
-      "name": "tags.txt",
-      "path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\tags.txt",
-      "size": 59,
-      "size_mb": 0.0,
-      "extension": ".txt",
-      "modified": "2026-06-10T19:43:00.978782",
-      "created": "2026-06-10T19:37:34.516680"
-    }
-  ],
+  "other_files": [],
   "subdirectories": [
     "D:\\trae-bz\\TraeProjects\\1083\\test_project\\image_assets",
     "D:\\trae-bz\\TraeProjects\\1083\\test_project\\video_assets"

@@ -1,0 +1,52 @@
+{
+  "checked_at": "2026-06-10T19:45:25.833009",
+  "errors": [],
+  "warnings": [
+    "demo_video.mp4: 无法获取视频元数据（建议安装 ffmpeg）",
+    "尚未提取候选封面，使用 cover extract 提取"
+  ],
+  "suggestions": [],
+  "platforms": {
+    "douyin": {
+      "score": 100,
+      "issues": [],
+      "tips": []
+    },
+    "xiaohongshu": {
+      "score": 100,
+      "issues": [],
+      "tips": []
+    }
+  },
+  "video_status_by_platform": {
+    "douyin": [
+      {
+        "video_name": "demo_video.mp4",
+        "duration": "未知",
+        "duration_ok": false,
+        "aspect_ratio": "未知",
+        "ratio_ok": false,
+        "has_cover": false,
+        "has_caption": true,
+        "title": "海边日落",
+        "has_title": true,
+        "has_description": true
+      }
+    ],
+    "xiaohongshu": [
+      {
+        "video_name": "demo_video.mp4",
+        "duration": "未知",
+        "duration_ok": false,
+        "aspect_ratio": "未知",
+        "ratio_ok": false,
+        "has_cover": false,
+        "has_caption": true,
+        "title": "海边日落",
+        "has_title": true,
+        "has_description": true
+      }
+    ]
+  },
+  "total_score": 100
+}

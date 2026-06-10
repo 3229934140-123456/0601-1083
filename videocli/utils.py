@@ -78,3 +78,43 @@ def log_operation(work_dir, operation, details=None):
     log_data.append(entry)
     save_json(log_data, log_path)
     return entry
+
+
+def resolve_project_path(work_dir, target_path):
+    """
+    解析项目内的路径
+    优先按绝对路径查找，然后按相对 work_dir 查找，最后按相对当前目录查找
+    当指定了 work_dir 时，相对路径优先相对于 work_dir 解析
+    """
+    if not target_path:
+        return None
+    
+    path_obj = Path(target_path)
+    
+    if path_obj.is_absolute():
+        if path_obj.exists():
+            return str(path_obj.absolute())
+    
+    if work_dir:
+        relative_to_work = os.path.join(work_dir, target_path)
+        if os.path.exists(relative_to_work):
+            return str(Path(relative_to_work).absolute())
+    
+    if os.path.exists(target_path):
+        return str(Path(target_path).absolute())
+    
+    return None
+
+
+def ensure_absolute_path(work_dir, target_path):
+    """确保路径是绝对路径，如果项目内存在则返回项目内的绝对路径"""
+    resolved = resolve_project_path(work_dir, target_path)
+    if resolved:
+        return resolved
+    if target_path and not Path(target_path).is_absolute():
+        return str(Path(os.path.join(work_dir, target_path)).absolute())
+    return target_path
+
+
+CHECK_REPORT = 'check_report.json'
+

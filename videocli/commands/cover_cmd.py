@@ -3,7 +3,8 @@ from pathlib import Path
 from tabulate import tabulate
 
 from ..utils import (
-    load_json, save_json, is_video, log_operation, PROJECT_MANIFEST
+    load_json, save_json, is_video, log_operation, PROJECT_MANIFEST,
+    resolve_project_path
 )
 from ..media import extract_video_thumbnails, get_image_dimensions
 
@@ -27,13 +28,17 @@ def extract_covers(work_dir, num_thumbs=5, target_video=None):
     
     if target_video:
         videos_to_process = []
-        target_path = os.path.abspath(target_video)
+        target_path = resolve_project_path(work_dir, target_video)
+        if not target_path:
+            print(f"错误: 未找到视频 {target_video}")
+            return None
+        
         for v in manifest['videos']:
             if os.path.abspath(v['path']) == target_path:
                 videos_to_process.append(v)
                 break
         if not videos_to_process:
-            print(f"错误: 未找到视频 {target_video}")
+            print(f"错误: 未在项目清单中找到视频 {target_video}")
             return None
     else:
         videos_to_process = manifest['videos']

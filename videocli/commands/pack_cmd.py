@@ -5,13 +5,13 @@ from datetime import datetime
 from tabulate import tabulate
 
 from ..utils import (
-    load_json, save_json, log_operation,
+    load_json, save_json, log_operation, CHECK_REPORT,
     PROJECT_MANIFEST, TAGS_FILE, TODO_FILE, OPERATION_LOG, PACK_DIR
 )
-from .check_cmd import check_project
+from .check_cmd import PLATFORMS
 
 
-def pack_project(work_dir, output_name=None, platforms=None):
+def pack_project(work_dir, output_name=None, platforms=None, overwrite=False):
     """打包项目为发布目录"""
     manifest_path = os.path.join(work_dir, PROJECT_MANIFEST)
     manifest = load_json(manifest_path)
@@ -21,7 +21,8 @@ def pack_project(work_dir, output_name=None, platforms=None):
         return None
     
     if platforms is None:
-        platforms = []
+        metadata = manifest.get('metadata', {})
+        platforms = metadata.get('platforms', [])
     elif isinstance(platforms, str):
         platforms = [p.strip() for p in platforms.split(',') if p.strip()]
     
@@ -30,7 +31,22 @@ def pack_project(work_dir, output_name=None, platforms=None):
         dir_name = os.path.basename(os.path.normpath(work_dir))
         output_name = f"{dir_name}_publish_{timestamp}"
     
-    pack_dir = os.path.join(work_dir, PACK_DIR, output_name)
+    packs_root = os.path.join(work_dir, PACK_DIR)
+    pack_dir = os.path.join(packs_root, output_name)
+    
+    if os.path.exists(pack_dir):
+        if overwrite:
+            print(f"⚠  已存在同名目录，正在覆盖: {output_name}")
+            shutil.rmtree(pack_dir)
+        else:
+            original_name = output_name
+            counter = 1
+            while os.path.exists(os.path.join(packs_root, output_name)):
+                output_name = f"{original_name}_v{counter}"
+                counter += 1
+            print(f"⚠  已存在同名目录 {original_name}，自动改名为: {output_name}")
+            pack_dir = os.path.join(packs_root, output_name)
+    
     Path(pack_dir).mkdir(parents=True, exist_ok=True)
     
     print(f"\n📦 正在打包到: {output_name}")
@@ -106,11 +122,23 @@ def pack_project(work_dir, output_name=None, platforms=None):
     if os.path.exists(tags_src):
         shutil.copy2(tags_src, os.path.join(metadata_dir, 'tags.txt'))
     
+    check_report_src = os.path.join(work_dir, CHECK_REPORT)
+    if os.path.exists(check_report_src):
+        shutil.copy2(check_report_src, os.path.join(metadata_dir, 'check_report.json'))
+        print("  ✓ 检查报告")
+    
     _generate_publish_info(pack_dir, manifest, platforms)
     print("  ✓ 发布信息")
     
-    todo_list = _generate_todo_list(work_dir, pack_dir, manifest, platforms)
+    check_report = load_json(check_report_src, None) if os.path.exists(check_report_src) else None
+    todo_list = _generate_todo_list(work_dir, pack_dir, manifest, platforms, check_report)
     print("  ✓ 待办列表")
+    
+    log_operation(work_dir, 'pack', {
+        'output_name': output_name,
+        'videos_count': len(packed['videos']),
+        'covers_count': len(packed['covers'])
+    })
     
     log_src = os.path.join(work_dir, OPERATION_LOG)
     if os.path.exists(log_src):
@@ -124,12 +152,6 @@ def pack_project(work_dir, output_name=None, platforms=None):
         'platforms': platforms or [],
     }
     save_json(packed_info, os.path.join(metadata_dir, 'pack_info.json'))
-    
-    log_operation(work_dir, 'pack', {
-        'output_name': output_name,
-        'videos_count': len(packed['videos']),
-        'covers_count': len(packed['covers'])
-    })
     
     print(f"\n✅ 打包完成!")
     print(f"   目录: {pack_dir}")
@@ -147,12 +169,18 @@ def _generate_publish_info(pack_dir, manifest, platforms=None):
     project_tags = manifest.get('project_tags', [])
     hashtag_str = ' '.join([f'#{tag}' for tag in project_tags])
     
+    metadata = manifest.get('metadata', {})
+    
     with open(info_path, 'w', encoding='utf-8') as f:
         f.write("# 发布信息\n\n")
         f.write(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
         
         f.write("## 项目信息\n\n")
         f.write(f"- 项目目录: {manifest.get('work_directory', '')}\n")
+        if metadata.get('title'):
+            f.write(f"- 项目标题: {metadata['title']}\n")
+        if metadata.get('author'):
+            f.write(f"- 作者: {metadata['author']}\n")
         f.write(f"- 视频数量: {len(manifest.get('videos', []))}\n")
         f.write(f"- 图片数量: {len(manifest.get('images', []))}\n\n")
         
@@ -164,15 +192,20 @@ def _generate_publish_info(pack_dir, manifest, platforms=None):
         
         f.write("## 视频详情\n\n")
         for i, video in enumerate(manifest.get('videos', []), 1):
+            video_meta = video.get('metadata', {})
             f.write(f"### 视频 {i}: {video['name']}\n\n")
+            if video_meta.get('title'):
+                f.write(f"- 标题: {video_meta['title']}\n")
             f.write(f"- 时长: {video.get('duration_formatted', 'N/A')}\n")
             f.write(f"- 分辨率: {video.get('width', '?')}x{video.get('height', '?')}\n")
             f.write(f"- 文件大小: {video.get('size_mb', '?')} MB\n")
             f.write(f"- 标签: {', '.join(video.get('tags', [])) or '无'}\n")
-            f.write(f"- 封面: {os.path.basename(video.get('selected_cover', '')) or '未选择'}\n\n")
+            f.write(f"- 封面: {os.path.basename(video.get('selected_cover', '')) or '未选择'}\n")
+            if video_meta.get('description') or video_meta.get('copy'):
+                f.write(f"- 文案: {video_meta.get('description') or video_meta.get('copy')}\n")
+            f.write("\n")
         
         if platforms:
-            from .check_cmd import PLATFORMS
             f.write("## 平台发布提示\n\n")
             for platform_key in platforms:
                 platform = PLATFORMS.get(platform_key)
@@ -183,29 +216,83 @@ def _generate_publish_info(pack_dir, manifest, platforms=None):
                     f.write(f"- 最大文件: {platform['max_file_size_mb']} MB\n\n")
 
 
-def _generate_todo_list(work_dir, pack_dir, manifest, platforms=None):
+def _generate_todo_list(work_dir, pack_dir, manifest, platforms=None, check_report=None):
     """生成待办事项列表"""
     todo_path = os.path.join(pack_dir, '05_metadata', TODO_FILE)
     
     todos = []
     
-    if not manifest.get('title'):
-        todos.append(('high', '设置视频标题', '为每个视频编写吸引人的标题'))
+    metadata = manifest.get('metadata', {})
     
-    if not manifest.get('description'):
-        todos.append(('high', '编写视频描述', '撰写视频简介和描述文案'))
+    if check_report:
+        for error in check_report.get('errors', []):
+            todos.append(('high', error, '需要立即修复的问题'))
+        
+        for warning in check_report.get('warnings', []):
+            todos.append(('medium', warning, '建议处理的问题'))
+        
+        video_status_by_platform = check_report.get('video_status_by_platform', {})
+        for platform_key, video_statuses in video_status_by_platform.items():
+            platform = PLATFORMS.get(platform_key, {})
+            platform_name = platform.get('name', platform_key)
+            for status in video_statuses:
+                if not status.get('has_title'):
+                    todos.append(('high',
+                        f"[{platform_name}] {status['video_name']} 缺少标题",
+                        "请使用 metadata set-video 设置视频标题"
+                    ))
+                if not status.get('has_description'):
+                    todos.append(('medium',
+                        f"[{platform_name}] {status['video_name']} 缺少描述文案",
+                        "请使用 metadata set-video 设置视频描述或文案"
+                    ))
+                if not status.get('has_cover'):
+                    todos.append(('high',
+                        f"[{platform_name}] {status['video_name']} 未选择封面",
+                        "请使用 cover select 选择视频封面"
+                    ))
+                if not status.get('has_caption'):
+                    todos.append(('medium',
+                        f"[{platform_name}] {status['video_name']} 缺少字幕",
+                        "请使用 caption generate 生成字幕草稿"
+                    ))
+                if not status.get('duration_ok'):
+                    todos.append(('medium',
+                        f"[{platform_name}] {status['video_name']} 时长 ({status['duration']}) 不在推荐范围",
+                        f"请调整时长至符合 {platform_name} 要求"
+                    ))
+                if not status.get('ratio_ok'):
+                    todos.append(('medium',
+                        f"[{platform_name}] {status['video_name']} 比例 ({status['aspect_ratio']}) 不是最佳比例",
+                        f"建议调整为 {platform.get('ideal_ratio', '推荐比例')}"
+                    ))
+    else:
+        if not metadata.get('title'):
+            todos.append(('high', '设置项目标题', '为项目设置吸引人的标题'))
+        
+        if not metadata.get('description'):
+            todos.append(('high', '编写项目描述', '撰写项目简介和描述文案'))
+        
+        if not manifest.get('project_tags', []):
+            todos.append(('high', '添加话题标签', '添加相关话题标签以增加曝光'))
+        
+        selected_covers_count = sum(1 for v in manifest.get('videos', []) if v.get('selected_cover'))
+        total_videos = len(manifest.get('videos', []))
+        if selected_covers_count < total_videos:
+            todos.append(('medium', '选择封面图', f'已选 {selected_covers_count}/{total_videos} 个视频选择了封面'))
+        
+        captions_count = len(manifest.get('captions', {}))
+        if captions_count < total_videos:
+            todos.append(('medium', '完善字幕', f'已生成 {captions_count}/{total_videos} 个视频字幕草稿'))
+        
+        for video in manifest.get('videos', []):
+            video_meta = video.get('metadata', {})
+            if not video_meta.get('title'):
+                todos.append(('high', f"{video['name']} 缺少标题", "请使用 metadata set-video 设置视频标题"))
+            if not video_meta.get('description') and not video_meta.get('copy'):
+                todos.append(('medium', f"{video['name']} 缺少描述文案", "请使用 metadata set-video 设置视频描述或文案"))
     
-    if not manifest.get('project_tags', []):
-        todos.append(('high', '添加话题标签', '添加相关话题标签以增加曝光'))
-    
-    selected_covers_count = sum(1 for v in manifest.get('videos', []) if v.get('selected_cover'))
-    total_videos = len(manifest.get('videos', []))
-    if selected_covers_count < total_videos:
-        todos.append(('medium', '选择封面图', f'已选 {selected_covers_count}/{total_videos} 个视频选择了封面'))
-    
-    captions_count = len(manifest.get('captions', {}))
-    if captions_count < total_videos:
-        todos.append(('medium', '完善字幕', f'已生成 {captions_count}/{total_videos} 个视频字幕草稿'))
+    todos = _deduplicate_todos(todos)
     
     todos.append(('low', '检查视频质量', '确认视频画质、音质、画面稳定性'))
     todos.append(('low', '预览最终效果', '完整观看一遍确认无误'))
@@ -216,6 +303,9 @@ def _generate_todo_list(work_dir, pack_dir, manifest, platforms=None):
     with open(todo_path, 'w', encoding='utf-8') as f:
         f.write("# 发布前待办列表\n\n")
         f.write(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+        
+        if check_report:
+            f.write(f"> 基于检查报告生成 (check_report.json)\n\n")
         
         priority_order = {'high': '🔴 高优先级', 'medium': '🟡 中优先级', 'low': '🟢 低优先级'}
         
@@ -237,9 +327,27 @@ def _generate_todo_list(work_dir, pack_dir, manifest, platforms=None):
             for entry in reversed(op_log[-10:]):
                 ts = entry.get('timestamp', '')
                 op = entry.get('operation', '')
-                f.write(f"- {ts}: {op}\n")
+                details = entry.get('details', {})
+                detail_str = ''
+                if details.get('output_name'):
+                    detail_str = f" ({details['output_name']})"
+                elif details.get('tags'):
+                    detail_str = f" ({', '.join(details['tags'])})"
+                f.write(f"- {ts}: {op}{detail_str}\n")
     
     return todos
+
+
+def _deduplicate_todos(todos):
+    """去重待办事项"""
+    seen = set()
+    unique = []
+    for priority, title, desc in todos:
+        key = (priority, title)
+        if key not in seen:
+            seen.add(key)
+            unique.append((priority, title, desc))
+    return unique
 
 
 def list_packs(work_dir):

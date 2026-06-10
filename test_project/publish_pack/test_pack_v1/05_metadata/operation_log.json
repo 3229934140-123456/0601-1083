@@ -133,58 +133,5 @@
       "videos_count": 1,
       "covers_count": 0
     }
-  },
-  {
-    "timestamp": "2026-06-10T19:43:29.084537",
-    "operation": "pack",
-    "details": {
-      "output_name": "test_pack",
-      "action": "start",
-      "platforms": [
-        "douyin",
-        "xiaohongshu"
-      ]
-    }
-  },
-  {
-    "timestamp": "2026-06-10T19:43:29.106608",
-    "operation": "pack",
-    "details": {
-      "output_name": "test_pack",
-      "action": "complete",
-      "videos_count": 1,
-      "covers_count": 0
-    }
-  },
-  {
-    "timestamp": "2026-06-10T19:45:04.763991",
-    "operation": "scan",
-    "details": {
-      "videos_count": 1,
-      "images_count": 2,
-      "recursive": true
-    }
-  },
-  {
-    "timestamp": "2026-06-10T19:45:25.852746",
-    "operation": "check",
-    "details": {
-      "errors_count": 0,
-      "warnings_count": 2,
-      "platforms_checked": [
-        "douyin",
-        "xiaohongshu"
-      ],
-      "report_saved": "check_report.json"
-    }
-  },
-  {
-    "timestamp": "2026-06-10T19:45:26.250301",
-    "operation": "pack",
-    "details": {
-      "output_name": "final_test",
-      "videos_count": 1,
-      "covers_count": 0
-    }
   }
 ]

@@ -3,7 +3,8 @@ from pathlib import Path
 
 from ..utils import (
     load_json, save_json, is_video, is_image,
-    log_operation, PROJECT_MANIFEST, TAGS_FILE
+    log_operation, PROJECT_MANIFEST, TAGS_FILE,
+    resolve_project_path
 )
 
 
@@ -22,7 +23,12 @@ def add_tags(work_dir, tags, target=None):
     tags = list(set(tags))
     
     if target:
-        target_path = os.path.abspath(target)
+        target_path = resolve_project_path(work_dir, target)
+        if not target_path:
+            print(f"错误: 未找到文件 {target}")
+            return None
+        
+        found = False
         for item_type in ['videos', 'images']:
             for item in manifest.get(item_type, []):
                 if os.path.abspath(item['path']) == target_path:
@@ -32,6 +38,10 @@ def add_tags(work_dir, tags, target=None):
                         if tag not in item['tags']:
                             item['tags'].append(tag)
                     print(f"✓ 已为 {item['name']} 添加标签: {', '.join(tags)}")
+                    found = True
+        
+        if not found:
+            print(f"警告: 未在项目清单中找到 {target}")
     else:
         if 'project_tags' not in manifest:
             manifest['project_tags'] = []
@@ -65,13 +75,22 @@ def remove_tags(work_dir, tags, target=None):
         tags = [t.strip() for t in tags.split(',') if t.strip()]
     
     if target:
-        target_path = os.path.abspath(target)
+        target_path = resolve_project_path(work_dir, target)
+        if not target_path:
+            print(f"错误: 未找到文件 {target}")
+            return None
+        
+        found = False
         for item_type in ['videos', 'images']:
             for item in manifest.get(item_type, []):
                 if os.path.abspath(item['path']) == target_path:
                     if 'tags' in item:
                         item['tags'] = [t for t in item['tags'] if t not in tags]
                         print(f"✓ 已从 {item['name']} 移除标签: {', '.join(tags)}")
+                        found = True
+        
+        if not found:
+            print(f"警告: 未在项目清单中找到 {target}")
     else:
         if 'project_tags' in manifest:
             manifest['project_tags'] = [t for t in manifest['project_tags'] if t not in tags]
