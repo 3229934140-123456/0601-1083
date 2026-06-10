@@ -1,0 +1,137 @@
+{
+  "generated_at": "2026-06-10T19:55:55.652413",
+  "platforms": [
+    "douyin",
+    "xiaohongshu"
+  ],
+  "project_title": "夏日旅行Vlog",
+  "project_author": "创作者小明",
+  "plans": {
+    "douyin": {
+      "platform_key": "douyin",
+      "platform_name": "抖音",
+      "generated_at": "2026-06-10T19:55:55.641321",
+      "platform_requirements": {
+        "ideal_duration": "15-60秒",
+        "ideal_ratio": "9:16",
+        "max_duration": "300秒",
+        "max_file_size": "512MB"
+      },
+      "videos": [
+        {
+          "video_name": "demo_video.mp4",
+          "video_path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\video_assets\\demo_video.mp4",
+          "title": "海边日落",
+          "copy": "今天带大家来看美丽的海边日落~",
+          "hashtags": [
+            "测试标签1",
+            "测试标签2",
+            "海边",
+            "日落",
+            "风景",
+            "旅行",
+            "夏日"
+          ],
+          "hashtag_str": "#测试标签1 #测试标签2 #海边 #日落 #风景 #海边 #旅行 #夏日",
+          "cover_path": "",
+          "caption_files": [
+            "D:\\trae-bz\\TraeProjects\\1083\\test_project\\captions\\demo_video.srt",
+            "D:\\trae-bz\\TraeProjects\\1083\\test_project\\captions\\demo_video.vtt"
+          ],
+          "duration": "未知",
+          "aspect_ratio": "未知",
+          "todos": [
+            {
+              "item": "未选择封面",
+              "priority": "high",
+              "action": "cover select"
+            },
+            {
+              "item": "时长不符合推荐范围",
+              "priority": "medium",
+              "action": "调整时长至 15-60秒"
+            },
+            {
+              "item": "比例非最佳",
+              "priority": "low",
+              "action": "建议调整为 9:16"
+            }
+          ],
+          "ready": false
+        }
+      ],
+      "summary": {
+        "total_videos": 1,
+        "ready_videos": 0,
+        "platform_score": 74,
+        "critical_missing": 1,
+        "publishable": false
+      }
+    },
+    "xiaohongshu": {
+      "platform_key": "xiaohongshu",
+      "platform_name": "小红书",
+      "generated_at": "2026-06-10T19:55:55.641321",
+      "platform_requirements": {
+        "ideal_duration": "30-300秒",
+        "ideal_ratio": "3:4",
+        "max_duration": "900秒",
+        "max_file_size": "2048MB"
+      },
+      "videos": [
+        {
+          "video_name": "demo_video.mp4",
+          "video_path": "D:\\trae-bz\\TraeProjects\\1083\\test_project\\video_assets\\demo_video.mp4",
+          "title": "海边日落",
+          "copy": "今天带大家来看美丽的海边日落~",
+          "hashtags": [
+            "测试标签1",
+            "测试标签2",
+            "海边",
+            "日落",
+            "风景",
+            "旅行",
+            "夏日"
+          ],
+          "hashtag_str": "#测试标签1 #测试标签2 #海边 #日落 #风景 #海边 #旅行 #夏日",
+          "cover_path": "",
+          "caption_files": [
+            "D:\\trae-bz\\TraeProjects\\1083\\test_project\\captions\\demo_video.srt",
+            "D:\\trae-bz\\TraeProjects\\1083\\test_project\\captions\\demo_video.vtt"
+          ],
+          "duration": "未知",
+          "aspect_ratio": "未知",
+          "todos": [
+            {
+              "item": "未选择封面",
+              "priority": "high",
+              "action": "cover select"
+            },
+            {
+              "item": "时长不符合推荐范围",
+              "priority": "medium",
+              "action": "调整时长至 30-300秒"
+            },
+            {
+              "item": "比例非最佳",
+              "priority": "low",
+              "action": "建议调整为 3:4"
+            }
+          ],
+          "ready": false
+        }
+      ],
+      "summary": {
+        "total_videos": 1,
+        "ready_videos": 0,
+        "platform_score": 74,
+        "critical_missing": 1,
+        "publishable": false
+      }
+    }
+  },
+  "summary": {
+    "total_platforms": 2,
+    "publishable_platforms": 0
+  }
+}

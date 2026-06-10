@@ -9,7 +9,8 @@ from .commands.cover_cmd import extract_covers, list_covers, select_cover
 from .commands.caption_cmd import generate_caption_draft, list_captions
 from .commands.check_cmd import check_project
 from .commands.pack_cmd import pack_project, list_packs
-from .commands.metadata_cmd import set_project_metadata, set_video_metadata, show_metadata
+from .commands.metadata_cmd import set_project_metadata, set_video_metadata, show_metadata, import_metadata
+from .commands.publish_plan_cmd import generate_publish_plan, show_publish_plan
 
 load_dotenv()
 
@@ -163,6 +164,18 @@ def metadata_set_video(ctx, video_path, title, description, copy, tags):
                      copy=copy, tags=tags)
 
 
+@metadata.command('import')
+@click.argument('file_path')
+@click.option('--format', 'file_format', default=None,
+              type=click.Choice(['csv', 'json']),
+              help='文件格式，默认根据扩展名自动判断')
+@click.pass_context
+def metadata_import(ctx, file_path, file_format):
+    """从 CSV 或 JSON 文件批量导入视频元数据"""
+    work_dir = ctx.obj['work_dir']
+    import_metadata(work_dir, file_path, file_format=file_format)
+
+
 @metadata.command('show')
 @click.option('-v', '--video', default=None, help='指定视频查看，不指定则显示项目')
 @click.pass_context
@@ -170,6 +183,33 @@ def metadata_show(ctx, video):
     """显示元数据"""
     work_dir = ctx.obj['work_dir']
     show_metadata(work_dir, video_path=video)
+
+
+@cli.group('publish-plan')
+def publish_plan():
+    """管理多平台发布计划"""
+    pass
+
+
+@publish_plan.command('generate')
+@click.option('-p', '--platforms', default=None, help='目标平台，多个用逗号分隔')
+@click.option('-f', '--format', 'export_format', default='both',
+              type=click.Choice(['md', 'json', 'both']),
+              help='导出格式')
+@click.pass_context
+def publish_plan_generate(ctx, platforms, export_format):
+    """生成各平台发布计划"""
+    work_dir = ctx.obj['work_dir']
+    generate_publish_plan(work_dir, platforms=platforms, export_format=export_format)
+
+
+@publish_plan.command('show')
+@click.option('-p', '--platform', default=None, help='查看指定平台的发布计划')
+@click.pass_context
+def publish_plan_show(ctx, platform):
+    """查看发布计划"""
+    work_dir = ctx.obj['work_dir']
+    show_publish_plan(work_dir, platform=platform)
 
 
 @cli.command()

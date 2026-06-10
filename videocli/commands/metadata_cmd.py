@@ -1,4 +1,6 @@
 import os
+import csv
+from pathlib import Path
 from tabulate import tabulate
 
 from ..utils import (
@@ -213,3 +215,165 @@ def show_metadata(work_dir, video_path=None):
             print("  暂无视频元数据")
     
     print()
+
+
+def import_metadata(work_dir, file_path, file_format=None):
+    manifest_path = os.path.join(work_dir, PROJECT_MANIFEST)
+    manifest = load_json(manifest_path)
+
+    if not manifest:
+        print("错误: 未找到项目清单，请先运行 scan 命令")
+        return None
+
+    resolved_file = resolve_project_path(work_dir, file_path)
+    if not resolved_file:
+        if os.path.exists(file_path):
+            resolved_file = os.path.abspath(file_path)
+        else:
+            print(f"错误: 未找到文件 {file_path}")
+            return None
+
+    if file_format is None:
+        ext = Path(resolved_file).suffix.lower()
+        if ext == '.csv':
+            file_format = 'csv'
+        elif ext == '.json':
+            file_format = 'json'
+        else:
+            print(f"错误: 无法判断文件格式，请使用 --format 指定 (csv/json)")
+            return None
+
+    if file_format == 'csv':
+        records = _parse_csv_file(resolved_file)
+    elif file_format == 'json':
+        records = _parse_json_file(resolved_file)
+    else:
+        print(f"错误: 不支持的格式 {file_format}")
+        return None
+
+    if not records:
+        print("错误: 未从文件中读取到有效记录")
+        return None
+
+    videos = manifest.get('videos', [])
+    matched = 0
+    updated = 0
+    unmatched_records = []
+
+    for record in records:
+        filename = record.get('filename', '').strip()
+        if not filename:
+            continue
+
+        target_video = _match_video(videos, filename, work_dir)
+        if not target_video:
+            unmatched_records.append(filename)
+            continue
+
+        matched += 1
+        if 'metadata' not in target_video:
+            target_video['metadata'] = {}
+
+        fields_updated = []
+        for field in ['title', 'description', 'copy']:
+            if field in record and record[field]:
+                target_video['metadata'][field] = record[field]
+                fields_updated.append(field)
+
+        if 'tags' in record and record['tags']:
+            tags = record['tags']
+            if isinstance(tags, str):
+                tags = [t.strip() for t in tags.split(',') if t.strip()]
+            target_video['metadata']['tags'] = tags
+            fields_updated.append('tags')
+
+        if fields_updated:
+            updated += 1
+            print(f"  ✓ {target_video['name']}: {', '.join(fields_updated)}")
+
+    save_json(manifest, manifest_path)
+
+    print(f"\n✅ 批量导入完成!")
+    print(f"   文件记录数: {len(records)}")
+    print(f"   匹配视频数: {matched}")
+    print(f"   更新视频数: {updated}")
+    if unmatched_records:
+        print(f"   未匹配文件: {', '.join(unmatched_records)}")
+
+    log_operation(work_dir, 'metadata_import', {
+        'source_file': os.path.basename(resolved_file),
+        'format': file_format,
+        'total_records': len(records),
+        'matched': matched,
+        'updated': updated,
+        'unmatched': len(unmatched_records),
+    })
+
+    return manifest
+
+
+def _match_video(videos, filename, work_dir):
+    filename_lower = filename.lower()
+
+    for video in videos:
+        if video['name'].lower() == filename_lower:
+            return video
+
+    for video in videos:
+        if Path(video['name']).stem.lower() == Path(filename).stem.lower():
+            return video
+
+    for video in videos:
+        video_name_lower = video['name'].lower()
+        if filename_lower in video_name_lower or video_name_lower in filename_lower:
+            return video
+
+    resolved = resolve_project_path(work_dir, filename)
+    if resolved:
+        for video in videos:
+            if os.path.abspath(video['path']) == resolved:
+                return video
+
+    return None
+
+
+def _parse_csv_file(file_path):
+    records = []
+    try:
+        with open(file_path, 'r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                record = {}
+                for key in ['filename', 'title', 'description', 'copy', 'tags']:
+                    val = row.get(key, '').strip() if row.get(key) else ''
+                    if val:
+                        record[key] = val
+                if record.get('filename'):
+                    records.append(record)
+    except Exception as e:
+        print(f"错误: 读取 CSV 文件失败: {e}")
+    return records
+
+
+def _parse_json_file(file_path):
+    records = []
+    try:
+        data = load_json(file_path, None)
+        if data is None:
+            print("错误: JSON 文件为空或格式不正确")
+            return records
+
+        if isinstance(data, list):
+            for item in data:
+                if isinstance(item, dict) and item.get('filename'):
+                    records.append(item)
+        elif isinstance(data, dict):
+            if data.get('filename'):
+                records.append(data)
+            elif 'videos' in data:
+                for item in data['videos']:
+                    if isinstance(item, dict) and item.get('filename'):
+                        records.append(item)
+    except Exception as e:
+        print(f"错误: 读取 JSON 文件失败: {e}")
+    return records

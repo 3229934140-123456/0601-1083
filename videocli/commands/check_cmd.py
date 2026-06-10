@@ -371,60 +371,84 @@ def _check_platform_compatibility(manifest, platform):
     issues = []
     tips = []
     score = 100
-    
+
     if not videos:
         return {'score': 0, 'issues': ['无视频文件'], 'tips': []}
-    
-    main_video = videos[0]
-    duration = main_video.get('duration')
-    
-    if duration is not None:
-        min_dur, max_dur = platform['ideal_duration']
-        if duration < min_dur:
-            score -= 20
-            issues.append(f"时长偏短 ({format_duration(duration)})，推荐 {min_dur}-{max_dur} 秒")
-        elif duration > max_dur:
+
+    for video in videos:
+        duration = video.get('duration')
+
+        if duration is not None and duration > 0:
+            min_dur, max_dur = platform['ideal_duration']
+            if duration < min_dur:
+                score -= 15
+                issues.append(f"{video['name']}: 时长偏短 ({format_duration(duration)})，推荐 {min_dur}-{max_dur} 秒")
+            elif duration > max_dur:
+                score -= 10
+                issues.append(f"{video['name']}: 时长偏长 ({format_duration(duration)})，推荐 {min_dur}-{max_dur} 秒")
+
+            if platform['max_duration'] and duration > platform['max_duration']:
+                score -= 30
+                issues.append(f"{video['name']}: 超过平台最大时长限制 ({platform['max_duration']} 秒)")
+        else:
             score -= 15
-            issues.append(f"时长偏长 ({format_duration(duration)})，推荐 {min_dur}-{max_dur} 秒")
-        
-        if platform['max_duration'] and duration > platform['max_duration']:
-            score -= 40
-            issues.append(f"超过平台最大时长限制 ({platform['max_duration']} 秒)")
-    
-    width = main_video.get('width')
-    height = main_video.get('height')
-    
-    if width and height:
-        ideal_ratio = platform['ideal_ratio']
-        ratio_w, ratio_h = _parse_ratio(ideal_ratio)
-        actual_ratio = width / height
-        ideal_ratio_value = ratio_w / ratio_h
-        ratio_diff = abs(actual_ratio - ideal_ratio_value) / ideal_ratio_value
-        
-        if ratio_diff > 0.15:
-            score -= 25
-            issues.append(f"画面比例 {width}:{height} 不是 {ideal_ratio}（{platform['aspect_ratios'].get(ideal_ratio, '推荐')}）")
-        elif ratio_diff > 0.05:
+            issues.append(f"{video['name']}: 无法获取视频时长，无法判断是否符合平台要求")
+
+        width = video.get('width')
+        height = video.get('height')
+
+        if width and height:
+            ideal_ratio = platform['ideal_ratio']
+            ratio_w, ratio_h = _parse_ratio(ideal_ratio)
+            actual_ratio = width / height
+            ideal_ratio_value = ratio_w / ratio_h
+            ratio_diff = abs(actual_ratio - ideal_ratio_value) / ideal_ratio_value
+
+            if ratio_diff > 0.15:
+                score -= 15
+                issues.append(f"{video['name']}: 画面比例 {width}:{height} 不是 {ideal_ratio}（{platform['aspect_ratios'].get(ideal_ratio, '推荐')}）")
+            elif ratio_diff > 0.05:
+                score -= 5
+                tips.append(f"{video['name']}: 建议调整为 {ideal_ratio} 比例以获得最佳展示效果")
+
+            min_w, min_h = platform['min_resolution']
+            if width < min_w or height < min_h:
+                score -= 10
+                issues.append(f"{video['name']}: 分辨率 {width}x{height} 低于推荐的 {min_w}x{min_h}")
+        else:
             score -= 10
-            tips.append(f"建议调整为 {ideal_ratio} 比例以获得最佳展示效果")
-        
-        min_w, min_h = platform['min_resolution']
-        if width < min_w or height < min_h:
+            issues.append(f"{video['name']}: 无法获取视频分辨率，无法判断比例是否符合要求")
+
+        if not video.get('selected_cover'):
+            score -= 15
+            issues.append(f"{video['name']}: 未选择封面")
+
+        video_meta = video.get('metadata', {})
+        if not video_meta.get('title'):
+            score -= 15
+            issues.append(f"{video['name']}: 缺少标题")
+
+        if not video_meta.get('description') and not video_meta.get('copy'):
+            score -= 10
+            issues.append(f"{video['name']}: 缺少描述文案")
+
+        size_mb = video.get('size_mb', 0)
+        if size_mb > platform['max_file_size_mb']:
             score -= 20
-            issues.append(f"分辨率 {width}x{height} 低于推荐的 {min_w}x{min_h}")
-    
-    size_mb = main_video.get('size_mb', 0)
-    if size_mb > platform['max_file_size_mb']:
-        score -= 30
-        issues.append(f"文件大小 {size_mb} MB 超过限制 {platform['max_file_size_mb']} MB")
-    
+            issues.append(f"{video['name']}: 文件大小 {size_mb} MB 超过限制 {platform['max_file_size_mb']} MB")
+
     project_tags = manifest.get('project_tags', [])
     if not project_tags:
-        score -= 10
+        score -= 8
         tips.append("建议添加相关话题标签以增加曝光")
     elif len(project_tags) < 3:
         tips.append("可以添加更多相关话题标签")
-    
+
+    captions = manifest.get('captions', {})
+    if not captions:
+        score -= 5
+        tips.append("建议生成字幕草稿")
+
     return {
         'score': max(0, score),
         'issues': issues,
