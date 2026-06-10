@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "videocli"
+version = "1.0.0"
+description = "短视频创作者命令行工具 - 批量整理发布前内容"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "VideoCreator Team"}
+]
+dependencies = [
+    "click>=8.1.0",
+    "Pillow>=10.0.0",
+    "python-dotenv>=1.0.0",
+    "tabulate>=0.9.0",
+]
+
+[project.scripts]
+videocli = "videocli.cli:main"
+vc = "videocli.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["videocli*"]

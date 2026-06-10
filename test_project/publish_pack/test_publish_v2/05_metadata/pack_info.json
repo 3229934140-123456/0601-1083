@@ -1,0 +1,25 @@
+{
+  "pack_name": "test_publish_v2",
+  "created_at": "2026-06-10T19:13:55.270244",
+  "contents": {
+    "pack_name": "test_publish_v2",
+    "created_at": "2026-06-10T19:13:55.256773",
+    "videos": [
+      "demo_video.mp4"
+    ],
+    "covers": [],
+    "captions": [
+      "demo_video.srt",
+      "demo_video.vtt"
+    ],
+    "images": [
+      "landscape_photo.jpg",
+      "portrait_photo.png",
+      "small_image.jpg"
+    ]
+  },
+  "platforms": [
+    "douyin",
+    "xiaohongshu"
+  ]
+}
