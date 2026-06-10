@@ -300,24 +300,5 @@
       "videos": 1,
       "export_format": "md"
     }
-  },
-  {
-    "timestamp": "2026-06-10T20:13:09.942033",
-    "operation": "handoff_export",
-    "details": {
-      "platform": "douyin",
-      "output_dir": "douyin_handoff_test",
-      "videos": 1,
-      "covers": 0
-    }
-  },
-  {
-    "timestamp": "2026-06-10T20:13:37.768531",
-    "operation": "pack",
-    "details": {
-      "output_name": "new_pack",
-      "videos_count": 1,
-      "covers_count": 0
-    }
   }
 ]

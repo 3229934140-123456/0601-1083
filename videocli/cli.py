@@ -11,6 +11,12 @@ from .commands.check_cmd import check_project
 from .commands.pack_cmd import pack_project, list_packs
 from .commands.metadata_cmd import set_project_metadata, set_video_metadata, show_metadata, import_metadata
 from .commands.publish_plan_cmd import generate_publish_plan, show_publish_plan
+from .commands.todo_cmd import (
+    list_todos, mark_todo_done, reopen_todo,
+    refresh_todos, mark_category_done
+)
+from .commands.handoff_cmd import export_handoff, list_handoffs
+from .commands.compare_cmd import compare_platforms
 
 load_dotenv()
 
@@ -245,6 +251,109 @@ def pack_list(ctx):
     """列出已打包的发布包"""
     work_dir = ctx.obj['work_dir']
     list_packs(work_dir)
+
+
+@cli.group()
+def todo():
+    """管理待办事项状态"""
+    pass
+
+
+@todo.command('refresh')
+@click.option('-p', '--platforms', default=None, help='目标平台，多个用逗号分隔')
+@click.pass_context
+def todo_refresh(ctx, platforms):
+    """根据检查结果刷新待办列表"""
+    work_dir = ctx.obj['work_dir']
+    refresh_todos(work_dir, platforms=platforms)
+
+
+@todo.command('list')
+@click.option('-s', '--status', default=None,
+              type=click.Choice(['pending', 'done']),
+              help='按状态筛选')
+@click.option('-p', '--platform', default=None, help='按平台筛选')
+@click.option('--priority', default=None,
+              type=click.Choice(['high', 'medium', 'low']),
+              help='按优先级筛选')
+@click.option('-c', '--category', default=None,
+              help='按类别筛选: title, cover, caption, description, duration, ratio')
+@click.pass_context
+def todo_list_cmd(ctx, status, platform, priority, category):
+    """列出待办事项"""
+    work_dir = ctx.obj['work_dir']
+    list_todos(work_dir,
+               filter_status=status,
+               filter_platform=platform,
+               filter_priority=priority,
+               filter_category=category)
+
+
+@todo.command('done')
+@click.argument('todo_id')
+@click.pass_context
+def todo_done(ctx, todo_id):
+    """标记待办为完成（按 ID，可输入前缀匹配）"""
+    work_dir = ctx.obj['work_dir']
+    mark_todo_done(work_dir, todo_id)
+
+
+@todo.command('reopen')
+@click.argument('todo_id')
+@click.pass_context
+def todo_reopen_cmd(ctx, todo_id):
+    """重新打开已完成的待办"""
+    work_dir = ctx.obj['work_dir']
+    reopen_todo(work_dir, todo_id)
+
+
+@todo.command('fix-category')
+@click.argument('category')
+@click.option('-p', '--platform', default=None, help='指定平台')
+@click.option('-v', '--video', default=None, help='指定视频')
+@click.pass_context
+def todo_fix_category(ctx, category, platform, video):
+    """批量标记某类别待办为完成（如封面已全部选好）"""
+    work_dir = ctx.obj['work_dir']
+    mark_category_done(work_dir, category, platform=platform, video=video)
+
+
+@cli.group('handoff')
+def handoff():
+    """管理可交付发布包"""
+    pass
+
+
+@handoff.command('export')
+@click.argument('platform')
+@click.option('-n', '--name', default=None, help='输出目录名称')
+@click.option('--overwrite', is_flag=True, default=False, help='同名目录覆盖')
+@click.pass_context
+def handoff_export_cmd(ctx, platform, name, overwrite):
+    """导出单个平台的可交付包，可单独拷走"""
+    work_dir = ctx.obj['work_dir']
+    export_handoff(work_dir, platform, output_dir=name, overwrite=overwrite)
+
+
+@handoff.command('list')
+@click.pass_context
+def handoff_list_cmd(ctx):
+    """列出所有交付包"""
+    work_dir = ctx.obj['work_dir']
+    list_handoffs(work_dir)
+
+
+@cli.command('compare-platforms')
+@click.option('-v', '--video', default=None, help='只对比指定视频（名称或路径关键字）')
+@click.option('-p', '--platforms', default=None, help='对比平台，多个用逗号分隔')
+@click.option('-e', '--export', 'export_format', default=None,
+              type=click.Choice(['json', 'md', 'both']),
+              help='导出对比结果到 publish_plans/')
+@click.pass_context
+def compare_platforms_cmd(ctx, video, platforms, export_format):
+    """跨平台对比同一视频的发布信息"""
+    work_dir = ctx.obj['work_dir']
+    compare_platforms(work_dir, video_filter=video, platforms=platforms, export_format=export_format)
 
 
 def main():

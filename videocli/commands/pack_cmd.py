@@ -207,7 +207,14 @@ def _pack_platform_subdir(pack_dir, work_dir, manifest, platform_key, platform, 
             if cap_file and os.path.exists(cap_file):
                 shutil.copy2(cap_file, os.path.join(captions_dir, os.path.basename(cap_file)))
 
-    plan = _build_platform_plan(manifest, platform_key, platform, project_tags, project_meta, check_report)
+    images_dir = os.path.join(platform_dir, 'images')
+    Path(images_dir).mkdir(exist_ok=True)
+    for img in manifest.get('images', []):
+        src = img['path']
+        if os.path.exists(src):
+            shutil.copy2(src, os.path.join(images_dir, img['name']))
+
+    plan = _build_platform_plan(manifest, platform_key, platform, project_tags, project_meta, check_report, relative=True)
     plan_path = os.path.join(platform_dir, f'{platform_key}_plan.json')
     save_json(plan, plan_path)
 
@@ -217,10 +224,12 @@ def _pack_platform_subdir(pack_dir, work_dir, manifest, platform_key, platform, 
 
     _write_platform_asset_list(plan, platform_dir, manifest)
 
+    _write_platform_readme(plan, platform_dir, manifest)
+
     print(f"  ✓ 平台目录: {platform_key}/ ({platform['name']})")
 
 
-def _build_platform_plan(manifest, platform_key, platform, project_tags, project_meta, check_report):
+def _build_platform_plan(manifest, platform_key, platform, project_tags, project_meta, check_report, relative=False):
     videos = manifest.get('videos', [])
     captions_info = manifest.get('captions', {})
 
@@ -233,24 +242,53 @@ def _build_platform_plan(manifest, platform_key, platform, project_tags, project
     for video in videos:
         video_meta = video.get('metadata', {})
         video_name = video['name']
-        video_tags = video.get('tags', []) + video_meta.get('tags', [])
-        video_tags = list(dict.fromkeys(video_tags))
+
+        video_tags_raw = video.get('tags', []) + video_meta.get('tags', [])
+        video_tags = []
+        seen_vtags = set()
+        for t in video_tags_raw:
+            if t not in seen_vtags:
+                seen_vtags.add(t)
+                video_tags.append(t)
 
         cover_path = video.get('selected_cover', '')
+        cover_rel = ''
+        if cover_path:
+            if relative:
+                cover_ext = Path(cover_path).suffix
+                cover_rel = f"covers/{Path(video_name).stem}_cover{cover_ext}"
+            else:
+                cover_rel = cover_path
+
         caption_files = []
+        caption_rel = []
         cap_info = captions_info.get(video_name, {})
         for cap_type in ['srt', 'vtt']:
             cap_file = cap_info.get(cap_type)
             if cap_file:
                 caption_files.append(cap_file)
+                if relative:
+                    caption_rel.append(f"captions/{os.path.basename(cap_file)}")
+                else:
+                    caption_rel.append(cap_file)
 
         status = platform_status.get(video_name, {})
 
         title = video_meta.get('title') or project_meta.get('title', '')
         copy_text = video_meta.get('copy') or video_meta.get('description') or project_meta.get('description', '')
 
-        all_tags = video_tags + [t for t in project_tags if t not in video_tags]
-        hashtag_str = ' '.join([f'#{t}' for t in all_tags]) if all_tags else ''
+        unique_tags = []
+        seen_hash = set()
+        for t in video_tags:
+            if t not in seen_hash:
+                seen_hash.add(t)
+                unique_tags.append(t)
+        for t in project_tags:
+            if t not in seen_hash:
+                seen_hash.add(t)
+                unique_tags.append(t)
+
+        hashtag_str = ' '.join([f'#{t}' for t in unique_tags]) if unique_tags else ''
 
         todos = []
         if not status.get('has_cover', bool(cover_path)):
@@ -268,14 +306,17 @@ def _build_platform_plan(manifest, platform_key, platform, project_tags, project
             todos.append({'item': '比例非最佳', 'priority': 'low',
                           'action': f"建议调整为 {platform['ideal_ratio']}"})
 
+        video_rel = f"videos/{video_name}" if relative else video['path']
+
         plan_videos.append({
             'video_name': video_name,
+            'video_path': video_rel,
             'title': title,
             'copy': copy_text,
-            'hashtags': all_tags,
+            'hashtags': unique_tags,
             'hashtag_str': hashtag_str,
-            'cover_path': cover_path,
-            'caption_files': caption_files,
+            'cover_path': cover_rel,
+            'caption_files': caption_rel,
             'duration': video.get('duration_formatted', status.get('duration', '未知')),
             'aspect_ratio': status.get('aspect_ratio', '未知'),
             'todos': todos,
@@ -283,6 +324,18 @@ def _build_platform_plan(manifest, platform_key, platform, project_tags, project
         })
 
     ready_count = sum(1 for v in plan_videos if v['ready'])
+    platform_score = 100
+    critical_missing = 0
+    for v in plan_videos:
+        for t in v['todos']:
+            if t['priority'] == 'high':
+                platform_score -= 15
+                critical_missing += 1
+            elif t['priority'] == 'medium':
+                platform_score -= 8
+            else:
+                platform_score -= 3
+    platform_score = max(0, platform_score)
 
     return {
         'platform_key': platform_key,
@@ -298,6 +351,8 @@ def _build_platform_plan(manifest, platform_key, platform, project_tags, project
         'summary': {
             'total_videos': len(plan_videos),
             'ready_videos': ready_count,
+            'platform_score': platform_score,
+            'critical_missing': critical_missing,
             'publishable': ready_count == len(plan_videos) and len(plan_videos) > 0,
         },
     }
@@ -321,27 +376,128 @@ def _write_platform_plan_md(plan, md_path, platform):
 
         s = plan['summary']
         status = "✅ 可发布" if s['publishable'] else "⚠️ 需完善"
-        f.write(f"## 发布状态: {status}\n\n")
+        f.write(f"## 发布状态: {status} (评分: {s['platform_score']}/100)\n\n")
 
         for v in plan['videos']:
             f.write(f"---\n\n## {v['video_name']}\n\n")
             f.write(f"- **标题**: {v['title'] or '（未设置）'}\n")
             f.write(f"- **文案**: {v['copy'] or '（未设置）'}\n")
             f.write(f"- **话题**: {v['hashtag_str'] or '（无）'}\n")
-            f.write(f"- **封面**: {os.path.basename(v['cover_path']) if v['cover_path'] else '（未选择）'}\n")
+            f.write(f"- **封面**: {v['cover_path'] or '（未选择）'}\n")
             if v['caption_files']:
-                f.write(f"- **字幕**: {', '.join(os.path.basename(c) for c in v['caption_files'])}\n")
+                f.write(f"- **字幕**: {', '.join(v['caption_files'])}\n")
             else:
                 f.write("- **字幕**: （无）\n")
+            f.write(f"- **视频文件**: {v['video_path']}\n")
             f.write(f"- **时长**: {v['duration']}\n")
             f.write(f"- **比例**: {v['aspect_ratio']}\n")
 
             if v['todos']:
                 f.write(f"\n### 待办事项\n\n")
                 for t in v['todos']:
-                    icon = {'high': '🔴', 'medium': '🟡', 'low': '🟢'}.get(t['priority'], '⚪')
-                    f.write(f"- {icon} {t['item']} → `{t['action']}`\n")
+                    priority_icon = {'high': '🔴', 'medium': '🟡', 'low': '🟢'}.get(t['priority'], '⚪')
+                    f.write(f"- {priority_icon} {t['item']} → `{t['action']}`\n")
                 f.write("\n")
+
+
+def _write_platform_readme(plan, platform_dir, manifest):
+    readme_path = os.path.join(platform_dir, 'README.md')
+    s = plan['summary']
+    status = "✅ 可发布" if s['publishable'] else "⚠️ 需完善"
+    project_meta = manifest.get('metadata', {})
+
+    with open(readme_path, 'w', encoding='utf-8') as f:
+        f.write(f"# {plan['platform_name']} 发布交接文档\n\n")
+        f.write(f"**生成时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+
+        if project_meta.get('title'):
+            f.write(f"**项目**: {project_meta['title']}\n\n")
+        if project_meta.get('author'):
+            f.write(f"**作者**: {project_meta['author']}\n\n")
+        if project_meta.get('notes'):
+            f.write(f"**备注**: {project_meta['notes']}\n\n")
+
+        f.write("---\n\n")
+        f.write("## 📊 状态总览\n\n")
+        f.write(f"- **发布状态**: {status}  (评分 {s['platform_score']}/100)\n")
+        f.write(f"- **视频总数**: {s['total_videos']}\n")
+        f.write(f"- **就绪视频**: {s['ready_videos']}/{s['total_videos']}\n")
+        f.write(f"- **高优先级缺失**: {s['critical_missing']}\n\n")
+
+        f.write("---\n\n")
+        f.write("## 📋 交付内容\n\n")
+        f.write("### 文件结构\n\n")
+        f.write("```\n")
+        f.write(f"{plan['platform_key']}/\n")
+        f.write("├── videos/           # 视频素材\n")
+        f.write("├── covers/           # 封面图\n")
+        f.write("├── captions/         # 字幕文件\n")
+        f.write("├── images/           # 配图素材\n")
+        f.write(f"├── {plan['platform_key']}_plan.md    # 发布计划（详细）\n")
+        f.write(f"├── {plan['platform_key']}_plan.json  # 发布计划（机器可读）\n")
+        f.write("├── todo_list.md      # 待办事项\n")
+        f.write("├── asset_list.md     # 素材清单\n")
+        f.write("└── README.md         # 本文档\n")
+        f.write("```\n\n")
+
+        f.write("---\n\n")
+        f.write("## 🎬 视频发布清单\n\n")
+        for i, v in enumerate(plan['videos'], 1):
+            icon = "✅" if v['ready'] else "⚠️"
+            f.write(f"### {i}. {icon} {v['video_name']}\n\n")
+            f.write(f"- **标题**: {v['title'] or '（待填写）'}\n")
+            copy_display = (v['copy'][:100] + '...') if v['copy'] and len(v['copy']) > 100 else (v['copy'] or '（待编写）')
+            f.write(f"- **文案**: {copy_display}\n")
+            f.write(f"- **话题**: {v['hashtag_str'] or '（待添加）'}\n")
+            f.write(f"- **素材位置**: `{v['video_path']}`\n")
+            if v['cover_path']:
+                f.write(f"- **封面**: `{v['cover_path']}`\n")
+            else:
+                f.write(f"- **封面**: （待选择）\n")
+            if v['caption_files']:
+                f.write(f"- **字幕**: {', '.join('`'+c+'`' for c in v['caption_files'])}\n")
+            f.write(f"- **时长**: {v['duration']}  |  **比例**: {v['aspect_ratio']}\n")
+
+            if v['todos']:
+                f.write(f"\n  **待完成**:\n")
+                for t in v['todos']:
+                    icon = {'high': '🔴', 'medium': '🟡', 'low': '🟢'}.get(t['priority'], '⚪')
+                    f.write(f"  - {icon} {t['item']}\n")
+            f.write("\n")
+
+        f.write("---\n\n")
+        f.write("## 💡 发布说明\n\n")
+        reqs = plan['platform_requirements']
+        f.write(f"- **推荐时长**: {reqs['ideal_duration']}\n")
+        f.write(f"- **最佳比例**: {reqs['ideal_ratio']}\n")
+        f.write(f"- **最大时长**: {reqs['max_duration']}\n")
+        f.write(f"- **文件大小上限**: {reqs['max_file_size']}\n\n")
+        f.write("发布前请确保所有待办事项已处理完成。\n")
+
+
+def _write_platform_asset_list(plan, platform_dir, manifest):
+    list_path = os.path.join(platform_dir, 'asset_list.md')
+
+    with open(list_path, 'w', encoding='utf-8') as f:
+        f.write(f"# {plan['platform_name']} 素材清单\n\n")
+        f.write(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+
+        for v in plan['videos']:
+            f.write(f"## {v['video_name']}\n\n")
+            f.write(f"| 类型 | 文件 |\n| --- | --- |\n")
+            f.write(f"| 视频 | {v['video_path']} |\n")
+            if v['cover_path']:
+                f.write(f"| 封面 | {v['cover_path']} |\n")
+            for cap_file in v['caption_files']:
+                f.write(f"| 字幕 | {cap_file} |\n")
+            f.write("\n")
+
+        images = manifest.get('images', [])
+        if images:
+            f.write("## 图片素材\n\n")
+            for img in images:
+                f.write(f"- images/{img['name']}\n")
+            f.write("\n")
 
 
 def _write_platform_todo(plan, platform_dir, work_dir, platform_key):
@@ -376,31 +532,6 @@ def _write_platform_todo(plan, platform_dir, work_dir, platform_key):
                     f.write(f"- [ ] {title}\n")
                     f.write(f"  → {desc}\n")
                 f.write("\n")
-
-
-def _write_platform_asset_list(plan, platform_dir, manifest):
-    list_path = os.path.join(platform_dir, 'asset_list.md')
-
-    with open(list_path, 'w', encoding='utf-8') as f:
-        f.write(f"# {plan['platform_name']} 素材清单\n\n")
-        f.write(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-
-        for v in plan['videos']:
-            f.write(f"## {v['video_name']}\n\n")
-            f.write(f"| 类型 | 文件 |\n| --- | --- |\n")
-            f.write(f"| 视频 | videos/{v['video_name']} |\n")
-            if v['cover_path']:
-                f.write(f"| 封面 | covers/{Path(v['cover_path']).stem}_cover{Path(v['cover_path']).suffix} |\n")
-            for cap_file in v['caption_files']:
-                f.write(f"| 字幕 | captions/{os.path.basename(cap_file)} |\n")
-            f.write("\n")
-
-        images = manifest.get('images', [])
-        if images:
-            f.write("## 图片素材\n\n")
-            for img in images:
-                f.write(f"- {img['name']}\n")
-            f.write("\n")
 
 
 def _generate_publish_info(pack_dir, manifest, platforms=None):

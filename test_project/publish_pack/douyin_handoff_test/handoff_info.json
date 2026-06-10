@@ -1,0 +1,19 @@
+{
+  "platform_key": "douyin",
+  "platform_name": "抖音",
+  "generated_at": "2026-06-10T20:13:09.939948",
+  "output_dir": "douyin_handoff_test",
+  "contents": {
+    "videos": 1,
+    "covers": 0,
+    "captions": 2,
+    "images": 2
+  },
+  "summary": {
+    "total_videos": 1,
+    "ready_videos": 0,
+    "platform_score": 74,
+    "critical_missing": 1,
+    "publishable": false
+  }
+}

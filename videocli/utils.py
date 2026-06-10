@@ -117,4 +117,6 @@ def ensure_absolute_path(work_dir, target_path):
 
 
 CHECK_REPORT = 'check_report.json'
+TODO_STATE_FILE = 'todo_state.json'
+PUBLISH_PLAN_DIR = 'publish_plans'
 
